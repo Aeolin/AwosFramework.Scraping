@@ -17,9 +17,9 @@ namespace AwosFramework.Scraping.Routing
 			if (path.Contains("://"))
 			{
 				var hostOffset = path.IndexOf("://") + 3;
-				var firstSegment = path.IndexOf("/", hostOffset) + 1;
+				var firstSegment = path.IndexOf("/", hostOffset);
 				Host = path.Substring(0, firstSegment);
-				Path = path.Substring(firstSegment);
+				Path = path.Substring(firstSegment + 1);
 			}
 			else
 			{

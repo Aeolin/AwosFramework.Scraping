@@ -2,6 +2,7 @@
 using HtmlAgilityPack;
 using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -13,7 +14,7 @@ namespace AwosFramework.Scraping.Html
 	public class HtmlDeserializer
 	{
 		public static T Deserialize<T>(HtmlNode node) => (T)Deserialize(node, typeof(T));
-		private static readonly Dictionary<Type, HtmlDeserializerTypeMetadata> _typeMetas = new Dictionary<Type, HtmlDeserializerTypeMetadata>();
+		private static readonly ConcurrentDictionary<Type, HtmlDeserializerTypeMetadata> _typeMetas = new ConcurrentDictionary<Type, HtmlDeserializerTypeMetadata>();
 
 		public static object Deserialize(HtmlNode node, Type type)
 		{
@@ -21,13 +22,13 @@ namespace AwosFramework.Scraping.Html
 			if (instance == null)
 				return null;
 
-			if(_typeMetas.TryGetValue(type, out var meta) == false)
+			if (_typeMetas.TryGetValue(type, out var meta) == false)
 			{
 				meta = new HtmlDeserializerTypeMetadata(type);
-				_typeMetas[type] = meta;
+				_typeMetas.TryAdd(type, meta);
 			}
 
-			foreach(var (property, handler) in meta.Properties)
+			foreach (var (property, handler) in meta.Properties)
 				property.SetValue(instance, handler.Deserialize(node));
 
 			return instance;

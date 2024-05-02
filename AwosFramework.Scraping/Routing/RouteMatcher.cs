@@ -45,7 +45,7 @@ namespace AwosFramework.Scraping.Routing
 		public RouteMatchResult Match(Uri url)
 		{
 			var segments = url.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
-			if (segments.Length != _matchers.Length || url.Host == _host)
+			if (segments.Length != _matchers.Length || (_host != null && $"{url.Scheme}://{url.Host}" != _host))
 				return RouteMatchResult.Failed;
 
 			var dict = new Dictionary<string, string>();

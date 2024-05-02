@@ -10,7 +10,8 @@ namespace AwosFramework.Scraping.ResultHandling
 {
 	internal class ResultTargetRegistry : IDisposable
 	{
-		private readonly List<IResultTarget> _handlers = new List<IResultTarget>();
+		private readonly List<IResultTarget> _targets = new List<IResultTarget>();
+		private readonly List<IResultHandler> _handlers = new List<IResultHandler>();
 		private ILoggerFactory _factory;
 
 		public ResultTargetRegistry(ILoggerFactory factory)
@@ -20,16 +21,16 @@ namespace AwosFramework.Scraping.ResultHandling
 
 		public void SaveAll()
 		{
-			foreach (var handler in _handlers.OfType<IResultHandler>())
+			foreach (var handler in _handlers)
 				handler.Save();
 		}
 
 		public void Dispose()
 		{
-			foreach (var handler in _handlers.OfType<IDisposable>())
+			foreach (var handler in _handlers)
 				handler.Dispose();
 
-			_handlers.Clear();
+			_targets.Clear();
 		}
 
 		public bool HandleResult(object obj)
@@ -38,7 +39,7 @@ namespace AwosFramework.Scraping.ResultHandling
 				return false;
 
 			bool result = true;
-			foreach (var handler in _handlers)
+			foreach (var handler in _targets)
 			{
 				if (handler.CanHandle(obj.GetType()))
 					result &= handler.Handle(obj);
@@ -57,7 +58,7 @@ namespace AwosFramework.Scraping.ResultHandling
 				if (attr != null && parameters.Length == 1)
 				{
 					var handler = ResultTarget.CreateTarget(type, method, null, attr.MatchType, _factory);
-					_handlers.Add(handler);
+					_targets.Add(handler);
 				}
 			}
 		}
@@ -66,6 +67,9 @@ namespace AwosFramework.Scraping.ResultHandling
 		{
 			var type = obj.GetType();
 			var methods = type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
+			if (obj is IResultHandler rHandler)
+				_handlers.Add(rHandler);
+
 			foreach (var method in methods)
 			{
 				var attr = method.GetCustomAttribute<HandleResultAttribute>();
@@ -73,7 +77,7 @@ namespace AwosFramework.Scraping.ResultHandling
 				if (attr != null && parameters.Length == 1)
 				{
 					var handler = ResultTarget.CreateTarget(type, method, obj, attr.MatchType, _factory);
-					_handlers.Add(handler);
+					_targets.Add(handler);
 				}
 			}
 		}

@@ -23,6 +23,9 @@ namespace AwosFramework.Scraping.Html.Handler
 		public override object Deserialize(HtmlNode root)
 		{
 			var value = Selector.SelectNodeValue(root);
+			if (value == null)
+				return null;
+
 			return _parseFunc(value);
 		}
 	}

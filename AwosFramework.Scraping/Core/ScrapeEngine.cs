@@ -38,7 +38,7 @@ namespace AwosFramework.Scraping.Core
 		{
 
 			if (_router.TryRoute(job.Uri, out var method, out var match) == false)
-				return new FailedResult();
+				return new FailedResult($"No matching route for url {job.Uri} found");
 
 			var type = method.ControllerType;
 			var controller = _container.GetService(type) as ScrapeController;

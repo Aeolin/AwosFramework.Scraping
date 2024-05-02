@@ -16,7 +16,7 @@ namespace AwosFramework.Scraping.Binding.DefaultBinders
 			var query = parameter.GetCustomAttribute<FromRouteAttribute>();
 			if (query != null)
 			{
-				binder = new QueryValueBinder(query.Key ?? parameter.Name, parameter.ParameterType, defaultValue);
+				binder = new RouteValueBinder(query.Key ?? parameter.Name, parameter.ParameterType, defaultValue);
 				return true;
 			}
 

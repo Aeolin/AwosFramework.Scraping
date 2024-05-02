@@ -24,7 +24,7 @@ namespace AwosFramework.Scraping.Binding.DefaultBinders
 				return new XPathSelector(xpath.XPath, xpath.Attribute, xpath.DeserializationType);
 
 			if (css != null)
-				return new CssSelector(css.Selector, css.Attribute, xpath.DeserializationType);
+				return new CssSelector(css.Selector, css.Attribute, css.DeserializationType);
 
 			return null;
 		}

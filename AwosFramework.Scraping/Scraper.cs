@@ -119,7 +119,7 @@ namespace AwosFramework.Scraping
 			}
 		}
 
-		public async Task RunAsync(ScrapeJob initialJob)
+		public async Task RunAsync(params ScrapeJob[] initialJobs)
 		{
 			for (int i = 0; i < _config.MaxThreads; i++)
 			{
@@ -131,7 +131,7 @@ namespace AwosFramework.Scraping
 			}
 
 			_runners.StartAll();
-			_runners.QueueJob(initialJob);
+			_runners.QueueJobs(initialJobs);
 
 			var source = new TaskCompletionSource();
 			_doneAwaiters.Add(source);
