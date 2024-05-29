@@ -23,7 +23,11 @@ namespace AwosFramework.Scraping.Routing
 		public ControllerMethod(MethodInfo methodInfo, IBinderFactory binderFactory)
 		{
 			var attr = methodInfo.GetCustomAttribute<RouteAttribute>();
-			_matcher = new RouteMatcher(attr.Host, attr.Path);
+			if (attr != null)
+				_matcher = new RouteMatcher(attr.Host, attr.Path);
+			else if(methodInfo.GetCustomAttribute<DefaultRouteAttribute>() == null)
+				throw new ArgumentException($"Method must either have a {nameof(RouteAttribute)} or {nameof(DefaultRouteAttribute)}", nameof(methodInfo));
+			
 			_binders = methodInfo.GetParameters().Select(p => binderFactory.CreateBinder(p, _matcher, p.HasDefaultValue ? p.DefaultValue : null)).ToArray();
 			_method = methodInfo;
 			_isTask = methodInfo.ReturnType.IsAssignableTo(typeof(Task<IScrapeResult>));
@@ -33,12 +37,12 @@ namespace AwosFramework.Scraping.Routing
 
 		public RouteMatchResult MatchResult(string route)
 		{
-			return _matcher.Match(route);
+			return _matcher?.Match(route) ?? RouteMatchResult.Failed;
 		}
 
 		public RouteMatchResult MatchResult(Uri route)
 		{
-			return _matcher.Match(route);
+			return _matcher?.Match(route) ?? RouteMatchResult.Failed;
 		}
 
 		public async Task<IScrapeResult> CallAsync(ScrapeController controllerInstance, ScrapingContext context)

@@ -12,6 +12,7 @@ namespace AwosFramework.Scraping
 	public class RouteMap
 	{
 		private readonly List<ControllerMethod> _routes;
+		private ControllerMethod _defaultRoute;
 
 		public RouteMap(IEnumerable<ControllerMethod> routes = null)
 		{
@@ -23,9 +24,14 @@ namespace AwosFramework.Scraping
 			_routes.Add(route);
 		}
 
+		public void SetDefaultRoute(ControllerMethod route)
+		{
+			_defaultRoute = route;
+		}
+
 		public bool TryRoute(Uri uri, out ControllerMethod method, out RouteMatchResult result)
 		{
-			foreach(var route in _routes)
+			foreach (var route in _routes)
 			{
 				method = route;
 				result = route.MatchResult(uri);
@@ -33,9 +39,19 @@ namespace AwosFramework.Scraping
 					return true;
 			}
 
-			method = null;
-			result = RouteMatchResult.Failed;
-			return false;
+			if (_defaultRoute != null)
+			{
+				method = _defaultRoute;
+				result = RouteMatchResult.Failed;
+				return true;
+			}
+			else
+			{
+				method = null;
+				result = RouteMatchResult.Failed;
+				return false;
+			}
+
 		}
 
 

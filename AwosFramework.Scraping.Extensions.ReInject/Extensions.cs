@@ -39,6 +39,10 @@ namespace AwosFramework.Scraping.Extensions.ReInject
 				.Where(x => x.GetCustomAttribute<RouteAttribute>() != null)
 				.ToArray();
 
+			var defaultRoute = controllers
+				.SelectMany(x => x.GetMethods())
+				.FirstOrDefault(x => x.GetCustomAttribute<DefaultRouteAttribute>() != null);
+
 			var binderFactory = container.GetInstance<IBinderFactory>();
 			if(binderFactory == null)
 				throw new InvalidOperationException($"No binder factory found, please call {nameof(AddDefaultBinders)} first or register a {nameof(IBinderFactory)} instance yourself");
@@ -48,6 +52,11 @@ namespace AwosFramework.Scraping.Extensions.ReInject
 			{
 				var route = new ControllerMethod(method, binderFactory);
 				router.AddRoute(route);
+			}
+			if(defaultRoute != null)
+			{
+				var defaultMethod = new ControllerMethod(defaultRoute, binderFactory);
+				router.SetDefaultRoute(defaultMethod);
 			}
 
 			container.AddSingleton(router);
