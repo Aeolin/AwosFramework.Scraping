@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AwosFramework.Scraping", "A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AwosFramework.Scraping.Extensions.ReInject", "AwosFramework.Scraping.Extensions.ReInject\AwosFramework.Scraping.Extensions.ReInject.csproj", "{553CF3EE-484A-4714-A9D9-6DAD6C44F8B8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AwosFramework.Scraping.Example", "AwosFramework.Scraping.Example\AwosFramework.Scraping.Example.csproj", "{7C7D395E-A140-4277-B3CC-299FB4AD38B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AwosFramework.Scraping.Example", "AwosFramework.Scraping.Example\AwosFramework.Scraping.Example.csproj", "{7C7D395E-A140-4277-B3CC-299FB4AD38B9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AwosFramework.Scraping.Extensions.ServiceCollection", "AwosFramework.Scraping.Extensions.ServiceCollection\AwosFramework.Scraping.Extensions.ServiceCollection.csproj", "{9D37D343-00CA-41EF-A8B7-D06789E21B1E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{7C7D395E-A140-4277-B3CC-299FB4AD38B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C7D395E-A140-4277-B3CC-299FB4AD38B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C7D395E-A140-4277-B3CC-299FB4AD38B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9D37D343-00CA-41EF-A8B7-D06789E21B1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9D37D343-00CA-41EF-A8B7-D06789E21B1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9D37D343-00CA-41EF-A8B7-D06789E21B1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9D37D343-00CA-41EF-A8B7-D06789E21B1E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

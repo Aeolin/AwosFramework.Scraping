@@ -87,7 +87,10 @@ namespace AwosFramework.Scraping
 
 		public Scraper WithResultHandler(object obj)
 		{
-			_resultHandlers.RegisterHandler(obj);
+			if (obj is Type type)
+				_resultHandlers.RegisterHandler(type);
+			else
+				_resultHandlers.RegisterHandler(obj);
 			return this;
 		}
 
