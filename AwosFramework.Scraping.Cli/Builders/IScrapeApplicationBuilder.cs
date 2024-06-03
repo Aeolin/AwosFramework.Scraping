@@ -1,4 +1,5 @@
-﻿using AwosFramework.Scraping.ResultHandling;
+﻿using AwosFramework.Scraping.Middleware;
+using AwosFramework.Scraping.ResultHandling;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace AwosFramework.Scraping.Hosting.Builders
 {
 	public interface IScrapeApplicationBuilder
 	{
-		public IScrapeApplicationBuilder UseMiddleware(object middleware);
+		public IScrapeApplicationBuilder UseMiddleware(Func<IServiceProvider, IMiddleware> middlewareFactory);
 		public IScrapeApplicationBuilder UseResultHandler(object resultHandle);
 	}
 }

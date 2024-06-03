@@ -1,4 +1,5 @@
 ﻿using AwosFramework.Scraping.Core;
+using AwosFramework.Scraping.Hosting;
 using AwosFramework.Scraping.Hosting.Builders;
 using AwosFramework.Scraping.Middleware;
 using Microsoft.Extensions.Configuration;
@@ -24,23 +25,24 @@ namespace AwosFramework.Scraping.Cli
 			return builder;
 		}
 
-		public IServiceProvider Services => _scope.ServiceProvider;
-		private IServiceScope _scope;
+		public IServiceProvider Services { get; init; }
+		public MiddlewareCollectionFactory Middleware { get; init; }
+		public ResultHandlerCollectionFactory ResultHandlers { get; init; }
 		private static Scraper _scraper;
 		private readonly List<HttpJob> _initialJobs = new List<HttpJob>();
 
-		private readonly List<Func<IServiceProvider, IMiddleware>> _middleware = new List<Func<IServiceProvider, IMiddleware>>();
 
-
-		internal ScrapeApplication(IServiceProvider provider)
+		internal ScrapeApplication(IServiceProvider provider, MiddlewareCollectionFactory middlewareBuilder, ResultHandlerCollectionFactory resultHandlers)
 		{
-			_scope = provider.CreateScope();
+			Services = provider;
+			Middleware = middlewareBuilder;
+			ResultHandlers=resultHandlers;
 			_scraper = Services.GetRequiredService<Scraper>();
 		}
 
-		public IScrapeApplicationBuilder AddMiddleware(Func<IServiceProvider, IMiddleware> middleware)
+		public IScrapeApplicationBuilder UseMiddleware(Func<IServiceProvider, IMiddleware> middleware)
 		{
-			_middleware.Add(middleware);
+			Middleware.AddMiddleware(middleware);
 			return this;
 		}
 
@@ -71,11 +73,6 @@ namespace AwosFramework.Scraping.Cli
 		{
 			_scraper.Dispose();
 			return Task.CompletedTask;
-		}
-
-		public IScrapeApplicationBuilder UseMiddleware(object middleware)
-		{
-			throw new NotImplementedException();
 		}
 
 		public IScrapeApplicationBuilder UseResultHandler(object resultHandler)

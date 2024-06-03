@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -41,7 +42,7 @@ namespace AwosFramework.Scraping
 			try
 			{
 				Interlocked.Increment(ref _jobInWorkCount);
-				var task = engine.ScrapeAsync_Old(job);
+				var task = engine.ScrapeAsync(job);
 				if (task == null)
 					return null;
 
@@ -125,10 +126,8 @@ namespace AwosFramework.Scraping
 		{
 			for (int i = 0; i < _config.MaxThreads; i++)
 			{
-				var engine = _container.GetService<ScrapeEngine>();
-				if (engine == null)
-					throw new InvalidOperationException($"Service for {nameof(ScrapeEngine)} could not be resolved");
-
+				var scope = _container.CreateScope();
+				var engine = scope.ServiceProvider.GetRequiredService<ScrapeEngine>();	
 				new Runner<IScrapeJob, IScrapeResult, ScrapeEngine>(_runners, engine);
 			}
 
