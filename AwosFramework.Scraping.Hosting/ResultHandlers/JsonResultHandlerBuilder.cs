@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace AwosFramework.Scraping.Extensions.ServiceCollection;
+namespace AwosFramework.Scraping.Hosting.ResultHandlers;
 
 public class JsonResultHandlerBuilder<T>
 {

@@ -57,5 +57,16 @@ namespace AwosFramework.Scraping.ResultHandling.Json
 		{
 			Save();
 		}
+
+		public Task HandleAsync(object obj)
+		{
+			Handle((T)obj);
+			return Task.CompletedTask;
+		}
+
+		public bool CanHandle(object obj)
+		{
+			return obj is T tObj && (_filter?.Invoke(tObj) ?? true);
+		}
 	}
 }

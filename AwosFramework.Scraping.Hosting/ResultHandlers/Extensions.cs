@@ -1,4 +1,4 @@
-﻿using AwosFramework.Scraping.Hosting.Builders;
+﻿using AwosFramework.Scraping.Hosting.Middleware;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +13,7 @@ namespace AwosFramework.Scraping.Hosting.ResultHandlers
 		{
 			var builder = new JsonResultHandlerBuilder<T>();
 			configure?.Invoke(builder);
-			scrapingBuilder.UseResultHandler(builder.Build());
+			scrapingBuilder.AddResultHandler(builder.Build());
 			return scrapingBuilder;
 		}
 	}

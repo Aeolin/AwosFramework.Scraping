@@ -10,9 +10,8 @@ namespace AwosFramework.Scraping.DepthBasedScraper
 	public class DepthBasedScrapingConfig
 	{
 		public int? MaxDepth { get; set; } = 1;
-		public int? MaxPages { get; set; } = 100;
+		public int? MaxPages { get; set; } = null;
 		public string StartUrlsFile { get; set; }
-		public string OutputDirectory { get; set; }
 		public string[] StartUrls { get; set; }
 
 	}

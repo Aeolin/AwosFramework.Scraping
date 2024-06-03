@@ -19,12 +19,15 @@ namespace AwosFramework.Scraping.Middleware.Result
 		public async Task<bool> ExecuteAsync(MiddlewareContext context)
 		{
 			var result = context.GetRequiredComponent<IScrapeResult>();
-			foreach(var handler in _resultHandlers)
+			if (result.Failed == false || context.ScrapeJob.AllowPartialResult)
 			{
-				foreach(var obj in result.Data)
+				foreach (var handler in _resultHandlers)
 				{
-					if (handler.CanHandle(obj))
-						await handler.HandleAsync(obj);
+					foreach (var obj in result.Data)
+					{
+						if (handler.CanHandle(obj))
+							await handler.HandleAsync(obj);
+					}
 				}
 			}
 

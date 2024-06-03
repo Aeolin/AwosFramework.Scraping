@@ -29,38 +29,40 @@ namespace AwosFramework.Scraping.Core
 			_middleware = middleware;
 		}
 
-		public ScrapeEngine(IServiceProvider container, ILoggerFactory factory, RouteMap router)
-		{
-			_provider = container;
-			var client = container.GetService<HttpClient>();
-			if (client == null)
-				throw new InvalidOperationException($"Couldn't get an http client from service provider");
-
-			_logger = factory.CreateLogger<ScrapeEngine>();
-		}
-
 		public async Task<IScrapeResult> ScrapeAsync(IScrapeJob job)
 		{
 			IsScraping = true;
 			var scope = _provider.CreateScope();
 			var loggerScope = _logger.BeginScope("ScrapeJob[{0}]", job.Id);
+			_logger.LogInformation("Start handling request for {url}", job.Uri);
 			var context = new MiddlewareContext(job, scope.ServiceProvider, _logger);
 			try
 			{
 				foreach (var middleware in _middleware)
 				{
 					var result = await middleware.ExecuteAsync(context);
-					if(result == false)
+					if (result == false)
 					{
 						_logger.LogWarning("Middleware {0} didn't execute successfully", middleware.GetType().Name);
 						return new FailedResult($"Middleware {middleware.GetType().Name} didn't execute successfully");
 					}
 				}
 
-				return context.GetRequiredComponent<IScrapeResult>();
+				var scrapeResult = context.GetRequiredComponent<IScrapeResult>();
+				if (scrapeResult.Failed)
+				{
+					_logger.LogError(scrapeResult.Exception, "Failed handling request for {url}", job.Uri);
+				}
+				else
+				{
+					_logger.LogInformation("Finished handling request for {url} successfully", job.Uri);
+				}
+
+				return scrapeResult;
 			}
 			catch (Exception ex)
 			{
+				_logger.LogError(ex, "Failed to handle request for {url} due to an unexpected exception", job.Uri);
 				return new FailedResult(ex);
 			}
 			finally

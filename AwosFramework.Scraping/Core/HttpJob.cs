@@ -52,7 +52,17 @@ namespace AwosFramework.Scraping.Core
 			return new HttpJob(url, 0, null, null, null);
 		}
 
+		public static HttpJob Get(Uri url)
+		{
+			return new HttpJob(url, 0, null, null, null);
+		}
+
 		public static HttpJob Get(string url, int priority = 0, object data = null, bool partialResult = false)
+		{
+			return new HttpJob(url, priority, null, data, null, partialResult);
+		}
+
+		public static HttpJob Get(Uri url, int priority = 0, object data = null, bool partialResult = false)
 		{
 			return new HttpJob(url, priority, null, data, null, partialResult);
 		}

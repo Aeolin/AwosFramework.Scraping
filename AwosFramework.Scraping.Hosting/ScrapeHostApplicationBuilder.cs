@@ -1,5 +1,4 @@
-﻿using App.Metrics;
-using AwosFramework.Scraping.Cli;
+﻿using AwosFramework.Scraping.Core;
 using AwosFramework.Scraping.Hosting.Builders;
 using AwosFramework.Scraping.Middleware;
 using AwosFramework.Scraping.Middleware.Result;
@@ -25,17 +24,25 @@ namespace AwosFramework.Scraping.Hosting
 
 		public ScrapeHostApplicationBuilder()
 		{
+		}
+
+		internal void AddDefaultServices()
+		{
+			Services.AddOptions();
 			Services.AddLogging(x => Logging = x);
 			Services.AddMetrics(x => Metrics = x);
-			Services.AddSingleton<IOptions<ScraperConfiguration>>();
+			Services.AddOptions<ScraperConfiguration>();
 			Services.Configure<ScraperConfiguration>(Configuration.GetSection("Scraper"));
 			Services.AddTransient(x => x.GetRequiredService<IOptions<ScraperConfiguration>>().Value);
-			Services.AddTransient<Scraper>();
-			Services.AddTransient<ScrapeApplication>();
 			Services.AddSingleton<MiddlewareCollectionFactory>();
-			Services.AddScoped<MiddlewareCollection>(x => x.GetRequiredService<MiddlewareCollectionFactory>().Create(x));
 			Services.AddSingleton<ResultHandlerCollectionFactory>();
+			Services.AddSingleton<RouteMapFactory>();
+			Services.AddTransient<ScrapeApplication>();
+			Services.AddScoped<MiddlewareCollection>(x => x.GetRequiredService<MiddlewareCollectionFactory>().Create(x));
 			Services.AddScoped<ResultHandlerCollection>(x => x.GetRequiredService<ResultHandlerCollectionFactory>().Create(x));
+			Services.AddSingleton(x => x.GetRequiredService<RouteMapFactory>().Create(x));
+			Services.AddTransient<Scraper>();
+			Services.AddScoped<ScrapeEngine>();
 		}
 
 		public IDictionary<object, object> Properties { get; init; } = new Dictionary<object, object>();

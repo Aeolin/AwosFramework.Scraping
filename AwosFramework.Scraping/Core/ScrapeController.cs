@@ -1,4 +1,5 @@
 ﻿using AwosFramework.Scraping.Core.Results;
+using AwosFramework.Scraping.Middleware.Http;
 using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
@@ -15,9 +16,9 @@ namespace AwosFramework.Scraping.Core
 		protected HtmlDocument Content { get; private set; }
 		protected JsonDocument JsonContent { get; private set; }
 		protected Uri Url { get; private set; }
-		public BinaryContent BinaryContent { get; private set; }
+		public HttpResponseData BinaryContent { get; private set; }
 
-		public void Setup(HtmlDocument content, JsonDocument json, BinaryContent binaryContent, Uri url)
+		public void Setup(HtmlDocument content, JsonDocument json, HttpResponseData binaryContent, Uri url)
 		{
 			Content = content;
 			JsonContent = json;

@@ -9,7 +9,6 @@ namespace AwosFramework.Scraping
 	public class ScraperConfiguration
 	{
 		public int MaxThreads { get; set; } = Environment.ProcessorCount;
-		public int BulkSize { get; set; } = 1000;
 		public int MaxRetries { get; set; } = 3;
 		public string ScraperName { get; set; }
 	}

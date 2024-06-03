@@ -2,12 +2,15 @@
 using AwosFramework.Scraping.Core;
 using AwosFramework.Scraping.Core.Results;
 using AwosFramework.Scraping.Middleware;
+using AwosFramework.Scraping.Middleware.Http;
+using HtmlAgilityPack;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace AwosFramework.Scraping.Routing
@@ -47,21 +50,13 @@ namespace AwosFramework.Scraping.Routing
 			return _matcher?.Match(route) ?? RouteMatchResult.Failed;
 		}
 
-		public async Task<IScrapeResult> CallAsync(ScrapeController controllerInstance, ScrapingContext context)
-		{
-			controllerInstance.Setup(context.HtmlContent, context.JsonContent, context.BinaryContent, context.Url);
-			var objects = _binders.Select(b => b.Bind(context)).ToArray();
-			var result = _method.Invoke(controllerInstance, objects);
-			if(_isTask)
-				return await (Task<IScrapeResult>)result;
-			else
-				return (IScrapeResult)result;
-		}
-
 		public async Task<IScrapeResult> HandleAsync(MiddlewareContext context)
 		{
-			var controller = _method.IsStatic ? null : context.ServiceProvider.GetRequiredService(ControllerType);
+			var controller = _method.IsStatic ? null : ActivatorUtilities.GetServiceOrCreateInstance(context.ServiceProvider, ControllerType);
 			var objects = _binders.Select(b => b.Bind(context)).ToArray();
+			if (controller is ScrapeController scrapeController)
+				scrapeController.Setup(context.GetComponent<HtmlDocument>(), context.GetComponent<JsonDocument>(), context.GetComponent<HttpResponseData>(), context.ScrapeJob.Uri);
+
 			var result = _method.Invoke(controller, objects);
 			if (_isTask)
 				return await(Task<IScrapeResult>)result;

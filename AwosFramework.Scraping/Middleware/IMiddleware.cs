@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 
 namespace AwosFramework.Scraping.Middleware
 {
-    public interface IMiddleware
-    {
-        public Task<bool> ExecuteAsync(MiddlewareContext context);
-    }
+	public interface IMiddleware
+	{
+		public Task<bool> ExecuteAsync(MiddlewareContext context);
+	}
 }

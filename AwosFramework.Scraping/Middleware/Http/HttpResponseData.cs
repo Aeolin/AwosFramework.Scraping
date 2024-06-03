@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AwosFramework.Scraping.Middleware.Http
 {
-	public struct HttpResponseData
+	public struct HttpResponseData : IDisposable
 	{
 		public Stream Stream { get; init; } 
 		public string MimeType { get; init; }
@@ -15,6 +15,11 @@ namespace AwosFramework.Scraping.Middleware.Http
 		{
 			Stream = stream;
 			MimeType = mimeType;
+		}
+
+		public void Dispose()
+		{
+			Stream?.Dispose();
 		}
 	}
 }

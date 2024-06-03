@@ -48,25 +48,21 @@ namespace AwosFramework.Scraping
 
 				var result = task.Result;
 
-				if (result.Failed == false)
-				{
-					if (result.Data != null)
-						foreach (var item in result.Data)
-							_resultHandlers.HandleResult(item);
+				//if (result.Failed == false)
+				//{
+				//	if (result.Data != null)
+				//		foreach (var item in result.Data)
+				//			_resultHandlers.HandleResult(item);
 
-					if (result.Jobs != null)
-						_runners.QueueJobs(result.Jobs.Select(x => (x, x.Priority)));
+				if (result.Failed )
+				{
+					if (result.Exception != null)
+						_logger.LogError(result.Exception, "Error while scraping {job}", job);
 				}
 				else
 				{
-					if (job.AllowPartialResult && result.Data != null)
-						foreach (var item in result.Data)
-							_resultHandlers.HandleResult(item);
-
-					if (result.Exception != null)
-						_logger.LogError(result.Exception, "Error while scraping {job}", job);
-					else
-						_logger.LogError(result.ErrorMessage);
+					if (result.Jobs != null)
+						_runners.QueueJobs(result.Jobs.Select(x => (x, x.Priority)));
 				}
 
 				return result;
@@ -127,7 +123,7 @@ namespace AwosFramework.Scraping
 			for (int i = 0; i < _config.MaxThreads; i++)
 			{
 				var scope = _container.CreateScope();
-				var engine = scope.ServiceProvider.GetRequiredService<ScrapeEngine>();	
+				var engine = scope.ServiceProvider.GetRequiredService<ScrapeEngine>();
 				new Runner<IScrapeJob, IScrapeResult, ScrapeEngine>(_runners, engine);
 			}
 

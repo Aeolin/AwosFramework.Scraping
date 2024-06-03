@@ -1,21 +1,20 @@
-﻿using AwosFramework.Scraping.Cli;
-using Microsoft.Extensions.DependencyInjection;
-using AwosFramework.Scraping.Extensions.ServiceCollection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using AwosFramework.Scraping;
 using AwosFramework.Scraping.DepthBasedScraper;
 using System.Text.Json;
 using AwosFramework.Scraping.Core;
+using AwosFramework.Scraping.Hosting.Middleware;
+using AwosFramework.Scraping.Hosting.ResultHandlers;
+using AwosFramework.Scraping.Hosting;
+using Microsoft.Extensions.Options;
 
 var builder = ScrapeApplication.CreateBuilder(args);
 builder.Services.AddBinderFactory(x => x.AddInbuiltBinders());
-builder.Services.AddScrapeControllers();
-builder.Services.AddScraper(x => {
-	builder.Configuration.GetSection("Scraper").Bind(x.Config);
-	
-});
-
-builder.Services.AddSingleton(builder.Configuration.GetSection("Settings").Get<DepthBasedScrapingConfig>());
+builder.Services.AddOptions<DepthBasedScrapingConfig>();
+builder.Services.Configure<DepthBasedScrapingConfig>(builder.Configuration.GetSection("ScrapeSettings"));
+builder.Services.AddTransient(x => x.GetRequiredService<IOptions<DepthBasedScrapingConfig>>().Value);
+builder.Services.AddScoped(x => new HttpClient());
 
 var app = builder.Build();
 var cfg = app.Services.GetRequiredService<DepthBasedScrapingConfig>();
@@ -32,12 +31,17 @@ if(cfg.StartUrlsFile?.EndsWith(".txt") ?? false)
 
 if(cfg.StartUrlsFile?.EndsWith(".json") ?? false)
 {
-	var urls = await File.ReadAllTextAsync(cfg.StartUrlsFile);
-	var json = JsonSerializer.Deserialize<string[]>(urls);
-	jobs.AddRange(json.Select(HttpJob.Get));
+	var json = await File.ReadAllTextAsync(cfg.StartUrlsFile);
+	var urls = JsonSerializer.Deserialize<string[]>(json);
+	jobs.AddRange(urls.Select(x =>HttpJob.Get(x, priority: 10)));
 }
 
-app.AddJobs(jobs);
+app.UseHttpRequests();
+app.MapControllers();
+app.UseResultHandling();
+app.AddJsonResultHandler<ScrapedPage>(x => x.WithDirectory("./pages").WithBatchSize(1000));
+
+app.AddInitialJobs(jobs);
 
 await app.StartAsync();
 app.Dispose();

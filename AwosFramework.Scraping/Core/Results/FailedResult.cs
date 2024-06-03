@@ -9,7 +9,7 @@ namespace AwosFramework.Scraping.Core.Results
 {
 	public class FailedResult : IScrapeResult
 	{
-		public IEnumerable<HttpJob> Jobs => Enumerable.Empty<HttpJob>();
+		public IEnumerable<IScrapeJob> Jobs => Enumerable.Empty<IScrapeJob>();
 
 		public bool Failed => true;
 

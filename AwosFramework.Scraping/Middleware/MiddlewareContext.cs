@@ -56,11 +56,13 @@ namespace AwosFramework.Scraping.Middleware
 				return false;
 			}
 		}
+		public bool HasComponent<T>(string key = null) => _components.ContainsKey((typeof(T), key));
 
 		public void Dispose()
 		{
 			foreach (var disposable in _components.Values.OfType<IDisposable>())
 				disposable.Dispose();
 		}
+
 	}
 }
