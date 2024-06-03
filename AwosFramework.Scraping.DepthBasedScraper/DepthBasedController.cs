@@ -39,7 +39,7 @@ namespace AwosFramework.Scraping.DepthBasedScraper
 			var links = this.Content.DocumentNode.SelectNodes("//a[@href]")?
 				.Select(link => link.GetAttributeValue("href", null))
 				.Select(x => new Uri(this.Url, x))
-				.Where(link => _queuedUrls.ContainsAndAdd(link) == false && link.Scheme.StartsWith("http"))
+				.Where(link => _queuedUrls.ContainsAndAdd(link) == false && link.Scheme.StartsWith("http") && (link.AbsolutePath.Contains('.') == false || link.AbsolutePath.EndsWith(".html", StringComparison.OrdinalIgnoreCase)))
 				.Select(link => HttpJob.Get(link, data: depth+1));
 
 			return OkFollow(links, result);
