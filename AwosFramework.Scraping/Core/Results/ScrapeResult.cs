@@ -8,13 +8,13 @@ namespace AwosFramework.Scraping.Core.Results
 {
 	public class ScrapeResult : IScrapeResult
 	{
-		public IEnumerable<ScrapeJob> Jobs { get; init; }
+		public IEnumerable<IScrapeJob> Jobs { get; init; }
 		public object[] Data { get; init; }
 		public bool Failed => false;
 		public Exception Exception => null;
 		public string ErrorMessage => null;
 
-		public ScrapeResult(IEnumerable<ScrapeJob> jobs, object[] data)
+		public ScrapeResult(IEnumerable<IScrapeJob> jobs, object[] data)
 		{
 			Jobs = jobs;
 			Data = data;

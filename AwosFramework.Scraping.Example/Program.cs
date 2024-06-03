@@ -60,5 +60,5 @@ if (geniusCfg.OnlyTopArtists == false)
 	initialUrl += $"/all?page={geniusCfg.StartPage}";
 
 
-await scraper.RunAsync(ScrapeJob.Get(initialUrl));
+await scraper.RunAsync(HttpJob.Get(initialUrl));
 Console.WriteLine($"Done");

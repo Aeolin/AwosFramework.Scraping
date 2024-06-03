@@ -1,4 +1,7 @@
-﻿using AwosFramework.Scraping.Utils;
+﻿using AwosFramework.Scraping.Middleware;
+using AwosFramework.Scraping.Middleware.Http;
+using AwosFramework.Scraping.Middleware.Routing;
+using AwosFramework.Scraping.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +30,15 @@ namespace AwosFramework.Scraping.Binding
 		{
 			if (context.QueryData.TryGetValue(ParameterName, out var data))
 				return _conversionFunc(data);
+
+			return DefaultValue;
+		}
+
+		public object Bind(MiddlewareContext context)
+		{
+			var data = context.GetRequiredComponent<QueryData>();
+			if (data.TryGetValue(ParameterName, out var value))
+				return _conversionFunc(value);
 
 			return DefaultValue;
 		}

@@ -9,8 +9,8 @@ namespace AwosFramework.Scraping.Core
 {
 	public interface IScrapeRoute
 	{
-		bool CanHandle(ScrapeJob job);
-		Task<IScrapeResult> HandleAsync(ScrapeController controller, ScrapeJob job);
+		bool CanHandle(HttpJob job);
+		Task<IScrapeResult> HandleAsync(ScrapeController controller, HttpJob job);
 		Type ControllerType { get; }
 	}
 }

@@ -8,7 +8,7 @@ namespace AwosFramework.Scraping.Core.Results
 {
 	public class FollowResult : IScrapeResult
 	{
-		public IEnumerable<ScrapeJob> Jobs { get; init; }
+		public IEnumerable<IScrapeJob> Jobs { get; init; }
 
 		public bool Failed => false;
 		public Exception Exception => null;
@@ -16,7 +16,7 @@ namespace AwosFramework.Scraping.Core.Results
 		public string ErrorMessage => null;
 
 
-		public FollowResult(IEnumerable<ScrapeJob> jobs)
+		public FollowResult(IEnumerable<IScrapeJob> jobs)
 		{
 			Jobs = jobs;
 		}

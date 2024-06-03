@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\AwosFramework.Scraping.Extensions.ServiceCollection\AwosFramework.Scraping.Extensions.ServiceCollection.csproj" />
     <ProjectReference Include="..\AwosFramework.Scraping\AwosFramework.Scraping.csproj" />
   </ItemGroup>
 

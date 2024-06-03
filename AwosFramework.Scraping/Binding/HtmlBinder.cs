@@ -1,5 +1,6 @@
 ﻿using AwosFramework.Scraping.Html;
 using AwosFramework.Scraping.Html.Handler;
+using AwosFramework.Scraping.Middleware;
 using AwosFramework.Scraping.Utils;
 using HtmlAgilityPack;
 using System;
@@ -34,6 +35,12 @@ namespace AwosFramework.Scraping.Binding
 				return DefaultValue;
 
 			return _handler.Deserialize(context.HtmlContent.DocumentNode);
+		}
+
+		public object Bind(MiddlewareContext context)
+		{
+			var html = context.GetRequiredComponent<HtmlDocument>();
+			return _handler.Deserialize(html.DocumentNode);
 		}
 	}
 }

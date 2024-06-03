@@ -1,6 +1,8 @@
 ﻿using AwosFramework.Scraping.Binding;
 using AwosFramework.Scraping.Core;
 using AwosFramework.Scraping.Core.Results;
+using AwosFramework.Scraping.Middleware;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace AwosFramework.Scraping.Routing
 {
-	public class ControllerMethod
+	public class ControllerMethod : IScrapeRequestHandler
 	{
 		private readonly RouteMatcher _matcher;
 		private readonly IBinder[] _binders;
@@ -56,5 +58,15 @@ namespace AwosFramework.Scraping.Routing
 				return (IScrapeResult)result;
 		}
 
+		public async Task<IScrapeResult> HandleAsync(MiddlewareContext context)
+		{
+			var controller = _method.IsStatic ? null : context.ServiceProvider.GetRequiredService(ControllerType);
+			var objects = _binders.Select(b => b.Bind(context)).ToArray();
+			var result = _method.Invoke(controller, objects);
+			if (_isTask)
+				return await(Task<IScrapeResult>)result;
+			else
+				return (IScrapeResult)result;
+		}
 	}
 }

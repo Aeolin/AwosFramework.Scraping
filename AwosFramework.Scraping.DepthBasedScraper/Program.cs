@@ -19,22 +19,22 @@ builder.Services.AddSingleton(builder.Configuration.GetSection("Settings").Get<D
 
 var app = builder.Build();
 var cfg = app.Services.GetRequiredService<DepthBasedScrapingConfig>();
-var jobs = new List<ScrapeJob>();
+var jobs = new List<HttpJob>();
 
 if (cfg.StartUrls != null)
-	jobs.AddRange(cfg.StartUrls.Select(ScrapeJob.Get));
+	jobs.AddRange(cfg.StartUrls.Select(HttpJob.Get));
 
 if(cfg.StartUrlsFile?.EndsWith(".txt") ?? false)
 {
 	var urls = await File.ReadAllLinesAsync(cfg.StartUrlsFile);
-	jobs.AddRange(urls.Select(ScrapeJob.Get));
+	jobs.AddRange(urls.Select(HttpJob.Get));
 }
 
 if(cfg.StartUrlsFile?.EndsWith(".json") ?? false)
 {
 	var urls = await File.ReadAllTextAsync(cfg.StartUrlsFile);
 	var json = JsonSerializer.Deserialize<string[]>(urls);
-	jobs.AddRange(json.Select(ScrapeJob.Get));
+	jobs.AddRange(json.Select(HttpJob.Get));
 }
 
 app.AddJobs(jobs);

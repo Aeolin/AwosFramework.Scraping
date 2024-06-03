@@ -8,7 +8,7 @@ namespace AwosFramework.Scraping.Core.Results
 {
 	public interface IScrapeResult
 	{
-		public IEnumerable<ScrapeJob> Jobs { get; }
+		public IEnumerable<IScrapeJob> Jobs { get; }
 		public bool Failed { get; }
 		public Exception Exception { get; }
 		public string ErrorMessage { get; }

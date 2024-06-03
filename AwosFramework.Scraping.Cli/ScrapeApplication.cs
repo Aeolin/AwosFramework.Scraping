@@ -1,4 +1,6 @@
 ﻿using AwosFramework.Scraping.Core;
+using AwosFramework.Scraping.Hosting.Builders;
+using AwosFramework.Scraping.Middleware;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,34 +13,44 @@ using System.Threading.Tasks;
 
 namespace AwosFramework.Scraping.Cli
 {
-	public class ScrapeApplication : IHost
+	public class ScrapeApplication : IHost, IScrapeApplicationBuilder
 	{
-		public static ScrapeApplicationBuilder CreateBuilder(string[] args)
+		public static ScrapeHostApplicationBuilder CreateBuilder(string[] args)
 		{
-			var builder = new ScrapeApplicationBuilder();
+			var builder = new ScrapeHostApplicationBuilder();
 			builder.Configuration.AddJsonFile("appsettings.json");
 			builder.Logging.AddConfiguration(builder.Configuration.GetSection("Logging"));
 			builder.Logging.AddConsole();
 			return builder;
 		}
 
-		public IServiceProvider Services { get; init; }
+		public IServiceProvider Services => _scope.ServiceProvider;
+		private IServiceScope _scope;
 		private static Scraper _scraper;
-		private readonly List<ScrapeJob> _initialJobs = new List<ScrapeJob>();
+		private readonly List<HttpJob> _initialJobs = new List<HttpJob>();
+
+		private readonly List<Func<IServiceProvider, IMiddleware>> _middleware = new List<Func<IServiceProvider, IMiddleware>>();
+
 
 		internal ScrapeApplication(IServiceProvider provider)
 		{
-			Services = provider;
-			_scraper = provider.GetRequiredService<Scraper>();
+			_scope = provider.CreateScope();
+			_scraper = Services.GetRequiredService<Scraper>();
 		}
 
-		public ScrapeApplication AddJobs(params ScrapeJob[] jobs)
+		public IScrapeApplicationBuilder AddMiddleware(Func<IServiceProvider, IMiddleware> middleware)
+		{
+			_middleware.Add(middleware);
+			return this;
+		}
+
+		public ScrapeApplication AddJobs(params HttpJob[] jobs)
 		{
 			_initialJobs.AddRange(jobs);
 			return this;
 		}
 
-		public ScrapeApplication AddJobs(IEnumerable<ScrapeJob> jobs)
+		public ScrapeApplication AddJobs(IEnumerable<HttpJob> jobs)
 		{
 			_initialJobs.AddRange(jobs);
 			return this;
@@ -46,6 +58,7 @@ namespace AwosFramework.Scraping.Cli
 
 		public void Dispose()
 		{
+			_scope.Dispose();
 			_scraper?.Dispose();
 		}
 
@@ -58,6 +71,17 @@ namespace AwosFramework.Scraping.Cli
 		{
 			_scraper.Dispose();
 			return Task.CompletedTask;
+		}
+
+		public IScrapeApplicationBuilder UseMiddleware(object middleware)
+		{
+			throw new NotImplementedException();
+		}
+
+		public IScrapeApplicationBuilder UseResultHandler(object resultHandler)
+		{
+			_scraper.WithResultHandler(resultHandler);
+			return this;
 		}
 	}
 }

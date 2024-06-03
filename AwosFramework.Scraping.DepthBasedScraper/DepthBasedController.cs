@@ -37,7 +37,7 @@ namespace AwosFramework.Scraping.DepthBasedScraper
 			var links = this.Content.DocumentNode.SelectNodes("//a[@href]")
 				.Select(n => n.Attributes["href"].Value)
 				.Where(l => !string.IsNullOrWhiteSpace(l) && _scrapedPages.Contains(l) == false)
-				.Select(x => ScrapeJob.Get(x, data: depth+1));
+				.Select(x => HttpJob.Get(x, data: depth+1));
 
 			return OkFollow(links, new ScrapedPage { Depth = depth, Url = this.Url.ToString(), Html = this.Content.Text });
 		}

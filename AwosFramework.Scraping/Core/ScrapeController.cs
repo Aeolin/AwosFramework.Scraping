@@ -25,14 +25,14 @@ namespace AwosFramework.Scraping.Core
 			Url = url;
 		}
 
-		public IScrapeResult Follow(IEnumerable<ScrapeJob> jobs) => new FollowResult(jobs);
-		public IScrapeResult Follow(params ScrapeJob[] jobs) => new FollowResult(jobs);
+		public IScrapeResult Follow(IEnumerable<IScrapeJob> jobs) => new FollowResult(jobs);
+		public IScrapeResult Follow(params IScrapeJob[] jobs) => new FollowResult(jobs);
 
-		public IScrapeResult OkFollow(object[] data, IEnumerable<ScrapeJob> jobs) => new ScrapeResult(jobs, data);
-		public IScrapeResult OkFollow(IEnumerable<ScrapeJob> jobs, params object[] data) => new ScrapeResult(jobs, data);
-		public IScrapeResult OkFollow<T>(IEnumerable<ScrapeJob> jobs, IEnumerable<T> data) => new ScrapeResult(jobs, data.Cast<object>().ToArray());
-		public IScrapeResult OkFollow(ScrapeJob job, params object[] data) => new ScrapeResult([job], data);
-		public IScrapeResult OkFollow(object[] data, params ScrapeJob[] jobs) => new ScrapeResult(jobs, data);
+		public IScrapeResult OkFollow(object[] data, IEnumerable<IScrapeJob> jobs) => new ScrapeResult(jobs, data);
+		public IScrapeResult OkFollow(IEnumerable<IScrapeJob> jobs, params object[] data) => new ScrapeResult(jobs, data);
+		public IScrapeResult OkFollow<T>(IEnumerable<IScrapeJob> jobs, IEnumerable<T> data) => new ScrapeResult(jobs, data.Cast<object>().ToArray());
+		public IScrapeResult OkFollow(IScrapeJob job, params object[] data) => new ScrapeResult([job], data);
+		public IScrapeResult OkFollow(object[] data, params HttpJob[] jobs) => new ScrapeResult(jobs, data);
 
 		public IScrapeResult Ok(params object[] data) => new ScrapeResult(null, data);
 

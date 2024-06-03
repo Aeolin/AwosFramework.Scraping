@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace AwosFramework.Scraping.ResultHandling
 {
-	internal interface IResultHandler : IDisposable
+	public interface IResultHandler : IDisposable
 	{
+		public Task HandleAsync(object obj);
+		public bool CanHandle(object obj);
 		public void Save();
 	}
 }

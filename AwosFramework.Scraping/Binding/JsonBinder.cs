@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AwosFramework.Scraping.Middleware;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,6 +27,12 @@ namespace AwosFramework.Scraping.Binding
 				return DefaultValue;
 
 			return JsonSerializer.Deserialize(context.JsonContent, ParameterType);
+		}
+
+		public object Bind(MiddlewareContext context)
+		{
+			var json = context.GetRequiredComponent<JsonDocument>();
+			return JsonSerializer.Deserialize(json, ParameterType);
 		}
 	}
 }

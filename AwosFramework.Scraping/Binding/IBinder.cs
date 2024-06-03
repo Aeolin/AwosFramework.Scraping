@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AwosFramework.Scraping.Middleware;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,5 +12,6 @@ namespace AwosFramework.Scraping.Binding
 		public string ParameterName { get; }
 		public Type ParameterType { get; }
 		public object Bind(ScrapingContext context);
+		public object Bind(MiddlewareContext context);
 	}
 }

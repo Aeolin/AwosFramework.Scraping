@@ -28,7 +28,7 @@ namespace AwosFramework.Scraping.Utils
 			//return (x) => Convert.ChangeType(x, type);
 		}
 
-		public static HttpRequestMessage Clone(this HttpRequestMessage req)
+		public static HttpRequestMessage ResendableCopy(this HttpRequestMessage req)
 		{
 			HttpRequestMessage clone = new HttpRequestMessage(req.Method, req.RequestUri);
 

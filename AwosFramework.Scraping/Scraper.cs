@@ -20,7 +20,7 @@ namespace AwosFramework.Scraping
 		private readonly ILogger _logger;
 		private readonly IServiceProvider _container;
 		private readonly ScraperConfiguration _config;
-		private readonly RunnerGroup<ScrapeJob, IScrapeResult, ScrapeEngine> _runners;
+		private readonly RunnerGroup<IScrapeJob, IScrapeResult, ScrapeEngine> _runners;
 		private readonly ResultTargetRegistry _resultHandlers;
 		private readonly List<TaskCompletionSource> _doneAwaiters = new List<TaskCompletionSource>();
 		private int _jobInWorkCount = 0;
@@ -28,7 +28,7 @@ namespace AwosFramework.Scraping
 		public Scraper(ILoggerFactory loggerFactory, ScraperConfiguration config, IServiceProvider container)
 		{
 			_logger = loggerFactory.CreateLogger<Scraper>();
-			_runners = new RunnerGroup<ScrapeJob, IScrapeResult, ScrapeEngine>(config.ScraperName ?? Assembly.GetExecutingAssembly().GetName().Name + " Scraping Runner", ScrapeLogic);
+			_runners = new RunnerGroup<IScrapeJob, IScrapeResult, ScrapeEngine>(config.ScraperName ?? Assembly.GetExecutingAssembly().GetName().Name + " Scraping Runner", ScrapeLogic);
 			_runners.OnError += _runners_OnError;
 			_runners.OnResult += _runners_OnResult;
 			_config = config;
@@ -36,12 +36,12 @@ namespace AwosFramework.Scraping
 			_resultHandlers = new ResultTargetRegistry(loggerFactory);
 		}
 
-		private IScrapeResult ScrapeLogic(ScrapeEngine engine, ScrapeJob job)
+		private IScrapeResult ScrapeLogic(ScrapeEngine engine, IScrapeJob job)
 		{
 			try
 			{
 				Interlocked.Increment(ref _jobInWorkCount);
-				var task = engine.ScrapeAsync(job);
+				var task = engine.ScrapeAsync_Old(job);
 				if (task == null)
 					return null;
 
@@ -109,11 +109,10 @@ namespace AwosFramework.Scraping
 				FireDone();
 		}
 
-		private void _runners_OnError(object source, ScrapeJob input, Exception ex)
+		private void _runners_OnError(object source, IScrapeJob input, Exception ex)
 		{
-			if (input.RetryCount < _config.MaxRetries)
+			if (input.Retry(_config.MaxRetries))
 			{
-				input.Retry();
 				_runners.QueueJob(input);
 			}
 			else if (_runners.Jobs.Count == 0 && _jobInWorkCount == 0)
@@ -122,7 +121,7 @@ namespace AwosFramework.Scraping
 			}
 		}
 
-		public async Task RunAsync(params ScrapeJob[] initialJobs)
+		public async Task RunAsync(params IScrapeJob[] initialJobs)
 		{
 			for (int i = 0; i < _config.MaxThreads; i++)
 			{
@@ -130,7 +129,7 @@ namespace AwosFramework.Scraping
 				if (engine == null)
 					throw new InvalidOperationException($"Service for {nameof(ScrapeEngine)} could not be resolved");
 
-				new Runner<ScrapeJob, IScrapeResult, ScrapeEngine>(_runners, engine);
+				new Runner<IScrapeJob, IScrapeResult, ScrapeEngine>(_runners, engine);
 			}
 
 			_runners.StartAll();

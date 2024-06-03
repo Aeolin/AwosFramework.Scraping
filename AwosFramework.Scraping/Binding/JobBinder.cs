@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AwosFramework.Scraping.Middleware;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -23,6 +24,14 @@ namespace AwosFramework.Scraping.Binding
 		{
 			if(context.JobData != null && context.JobData.GetType().IsAssignableTo(ParameterType))
 				return context.JobData;
+
+			return DefaultValue;
+		}
+
+		public object Bind(MiddlewareContext context)
+		{
+			if (context.ScrapeJob.Data != null && context.ScrapeJob.Data.GetType().IsAssignableTo(ParameterType))
+				return context.ScrapeJob.Data;
 
 			return DefaultValue;
 		}

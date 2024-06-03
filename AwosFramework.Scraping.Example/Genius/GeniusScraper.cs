@@ -57,9 +57,9 @@ namespace AwosFramework.Scraping.Example.Genius
 				_artistCounts[letter] = left - count;
 			}
 
-			var jobs = artists.Artists.Take(count).Select(x => ScrapeJob.Get(x, 9)).ToList();
+			var jobs = artists.Artists.Take(count).Select(x => HttpJob.Get(x, 9)).ToList();
 			if (TryGetNextLetter(letter, out var nextLetter))
-				jobs.Add(ScrapeJob.Get($"{_geniusCfg.Url}/artists-index/{nextLetter}", 10));
+				jobs.Add(HttpJob.Get($"{_geniusCfg.Url}/artists-index/{nextLetter}", 10));
 
 			return Follow(jobs);
 		}
@@ -77,15 +77,15 @@ namespace AwosFramework.Scraping.Example.Genius
 				_artistCounts[letter] = countLeft;
 			}
 
-			var jobs = artists.Artists.Take(count).Select(x => ScrapeJob.Get(x, 9)).ToList();
+			var jobs = artists.Artists.Take(count).Select(x => HttpJob.Get(x, 9)).ToList();
 			if (artists.NextPage != null && countLeft > 0)
 			{
-				jobs.Add(ScrapeJob.Get($"{_geniusCfg.Url}{artists.NextPage}", 10));
+				jobs.Add(HttpJob.Get($"{_geniusCfg.Url}{artists.NextPage}", 10));
 			}
 			else
 			{
 				if (TryGetNextLetter(letter, out var nextLetter))
-					jobs.Add(ScrapeJob.Get($"{_geniusCfg.Url}/artists-index/{nextLetter}/all?page={_geniusCfg.StartPage}", 10));
+					jobs.Add(HttpJob.Get($"{_geniusCfg.Url}/artists-index/{nextLetter}/all?page={_geniusCfg.StartPage}", 10));
 			}
 
 			return Follow(jobs);
@@ -102,7 +102,7 @@ namespace AwosFramework.Scraping.Example.Genius
 			};
 
 			var songs = GetSongPageRoute(artist.GeniusId, 1);
-			return OkFollow(ScrapeJob.Get(songs, 8, artist), artist);
+			return OkFollow(HttpJob.Get(songs, 8, artist), artist);
 		}
 
 
@@ -137,9 +137,9 @@ namespace AwosFramework.Scraping.Example.Genius
 			});
 
 			var features = songs.Where(x => x.FeaturedArtists != null && x.FeaturedArtists.Length > 0).SelectMany(x => x.FeaturedArtists.Select(y => new Feature { ArtistId = y.Id, SongId = x.Id }));
-			var jobs = songModels.Select(x => ScrapeJob.Get(x.Url, 7, x.Model)).ToList();
+			var jobs = songModels.Select(x => HttpJob.Get(x.Url, 7, x.Model)).ToList();
 			if (nextPage.HasValue && _geniusCfg.MaxSongsPerArtist.HasValue && _geniusCfg.MaxSongsPerArtist.Value < _geniusCfg.SongPageSize * nextPage.Value)
-				jobs.Add(ScrapeJob.Get(GetSongPageRoute(artist.GeniusId, nextPage.Value), 8, artist));
+				jobs.Add(HttpJob.Get(GetSongPageRoute(artist.GeniusId, nextPage.Value), 8, artist));
 
 			return OkFollow(jobs, features);
 		}
@@ -173,7 +173,7 @@ namespace AwosFramework.Scraping.Example.Genius
 			}
 
 			song.Lyrics = builder.ToString();
-			var search = ScrapeJob.Get($"{_lastFmCfg.Url}/de/search?q={song.Title} {song.PrimaryArtistName}", 6, song, true);
+			var search = HttpJob.Get($"{_lastFmCfg.Url}/de/search?q={song.Title} {song.PrimaryArtistName}", 6, song, true);
 			return Follow(search);
 		}
 
@@ -181,7 +181,7 @@ namespace AwosFramework.Scraping.Example.Genius
 		public IScrapeResult SearchLastFm([FromJob] Song song, [FromXPath("//td[@class='chartlist-name']/a", Attribute = "href")] string lastFmUrl)
 		{
 			if (lastFmUrl != null)
-				return Follow(ScrapeJob.Get($"{_lastFmCfg.Url}/{lastFmUrl}", 3, song, true));
+				return Follow(HttpJob.Get($"{_lastFmCfg.Url}/{lastFmUrl}", 3, song, true));
 
 			return Ok(song);
 		}
