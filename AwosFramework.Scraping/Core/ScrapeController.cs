@@ -14,12 +14,15 @@ namespace AwosFramework.Scraping.Core
 	{
 		protected HtmlDocument Content { get; private set; }
 		protected JsonDocument JsonContent { get; private set; }
+		protected Uri Url { get; private set; }
 		public BinaryContent BinaryContent { get; private set; }
-		public void Setup(HtmlDocument content, JsonDocument json, BinaryContent binaryContent)
+
+		public void Setup(HtmlDocument content, JsonDocument json, BinaryContent binaryContent, Uri url)
 		{
 			Content = content;
 			JsonContent = json;
 			BinaryContent = binaryContent;
+			Url = url;
 		}
 
 		public IScrapeResult Follow(IEnumerable<ScrapeJob> jobs) => new FollowResult(jobs);

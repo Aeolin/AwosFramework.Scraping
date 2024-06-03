@@ -15,6 +15,7 @@ namespace AwosFramework.Scraping
 	{
 		public FrozenDictionary<string, string> RouteData { get; init; }
 		public FrozenDictionary<string, string> QueryData { get; init; }
+		public Uri Url { get; init; }
 		public JsonDocument JsonContent { get; init; }
 		public HtmlDocument HtmlContent { get; init; }
 		public BinaryContent BinaryContent { get; init; }

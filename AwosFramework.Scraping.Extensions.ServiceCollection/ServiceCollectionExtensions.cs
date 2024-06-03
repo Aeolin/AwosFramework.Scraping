@@ -26,7 +26,7 @@ namespace AwosFramework.Scraping.Extensions.ServiceCollection
 			return scrapingBuilder;
 		}
 
-		public static IServiceCollection AddWebScraping(this IServiceCollection services, Action<IScraperFactoryBuilder> configure)
+		public static IServiceCollection AddScraper(this IServiceCollection services, Action<IScraperFactoryBuilder> configure)
 		{
 			services.AddTransient<ScrapeEngine>();
 			var factory = new ScraperFactory();

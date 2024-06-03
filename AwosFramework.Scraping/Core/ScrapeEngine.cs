@@ -87,7 +87,7 @@ namespace AwosFramework.Scraping.Core
 
 			try
 			{
-				var context = new ScrapingContext { BinaryContent = binary, HtmlContent = html, JsonContent = json, RouteData = match.Data, QueryData = queryData, JobData = job.Data };
+				var context = new ScrapingContext { Url = job.Request.RequestUri, BinaryContent = binary, HtmlContent = html, JsonContent = json, RouteData = match.Data, QueryData = queryData, JobData = job.Data };
 				var result = await method.CallAsync(controller, context);
 				_logger.LogInformation("Executed job[{0}]({1}) for url {2}, success: {3}", job.Id, job.Data, job.Uri, !result?.Failed);
 				return result;

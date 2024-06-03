@@ -47,7 +47,7 @@ namespace AwosFramework.Scraping.Routing
 
 		public async Task<IScrapeResult> CallAsync(ScrapeController controllerInstance, ScrapingContext context)
 		{
-			controllerInstance.Setup(context.HtmlContent, context.JsonContent, context.BinaryContent);
+			controllerInstance.Setup(context.HtmlContent, context.JsonContent, context.BinaryContent, context.Url);
 			var objects = _binders.Select(b => b.Bind(context)).ToArray();
 			var result = _method.Invoke(controllerInstance, objects);
 			if(_isTask)
