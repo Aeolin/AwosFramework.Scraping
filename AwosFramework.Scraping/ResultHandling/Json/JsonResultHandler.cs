@@ -36,16 +36,22 @@ namespace AwosFramework.Scraping.ResultHandling.Json
 		public async Task SaveAsync(bool respectBatchSize = false)
 		{
 			await _saveSemaphore.WaitAsync();
-			if ((respectBatchSize == false || _bag.Count >= BatchSize) && _bag.Count > 0 )
+			try
 			{
-				var data = Interlocked.Exchange(ref _bag, new ConcurrentBag<T>());
-				using var file = File.Create(Path.Combine(Directory, string.Format(FileName, BatchCount++, BatchSize)));
-				await JsonSerializer.SerializeAsync(file, data, SerializerOptions);
+				if ((respectBatchSize == false || _bag.Count >= BatchSize) && _bag.Count > 0)
+				{
+					var data = Interlocked.Exchange(ref _bag, new ConcurrentBag<T>());
+					using var file = File.Create(Path.Combine(Directory, string.Format(FileName, BatchCount++, BatchSize)));
+					await JsonSerializer.SerializeAsync(file, data, SerializerOptions);
+				}
 			}
-			_saveSemaphore.Release();
+			finally
+			{
+				_saveSemaphore.Release();
+			}
 		}
 
-		
+
 
 		public async Task HandleAsync(object data)
 		{
@@ -55,7 +61,7 @@ namespace AwosFramework.Scraping.ResultHandling.Json
 			_bag.Add(tData);
 			if (_bag.Count == BatchSize)
 				await SaveAsync(true);
-			
+
 		}
 
 		public Task SaveAsync() => SaveAsync(false);
