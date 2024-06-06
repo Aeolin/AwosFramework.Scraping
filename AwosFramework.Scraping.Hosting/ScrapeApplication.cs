@@ -62,7 +62,8 @@ namespace AwosFramework.Scraping.Hosting
 
 		public async Task StartAsync(CancellationToken cancellationToken = default)
 		{
-			ulong resultCount = 0;
+			ulong scrapeCount = 0;
+			ulong successCount = 0;
 			long totalTicks = 0;
 			var watch = new Stopwatch();
 			var totalTime = new Stopwatch();
@@ -80,13 +81,13 @@ namespace AwosFramework.Scraping.Hosting
 				totalTicks += watch.ElapsedTicks;
 				watch.Restart();
 
-				if (resultCount++ % 50 == 0)
+				if (scrapeCount++ % 50 == 0)
 				{
-					var averageTicks = totalTicks / (double)resultCount;
+					var averageTicks = totalTicks / (double)scrapeCount;
 					var tps = averageTicks / Stopwatch.Frequency * 1000;
 					_logger.LogInformation("Average time per scrape: {average}ms", tps);
-					var sps = resultCount / (totalTicks / (double)Stopwatch.Frequency);
-					Console.Title = $"{_config.ScraperName} | {tps:#.00ms} ms/Job | {sps:#.00} Jobs/s | {resultCount} Results | {jobs.Count} Job Queue | Uptime {totalTime.Elapsed} | ETA {TimeSpan.FromSeconds(jobs.Count/sps)}";
+					var sps = scrapeCount / (totalTicks / (double)Stopwatch.Frequency);
+					Console.Title = $"{_config.ScraperName} | {tps:#.00ms} ms/Job | {sps:#.00} Jobs/s | {scrapeCount} Scraped | {successCount} Results | {scrapeCount-successCount} Failed Scrapes | {failed.Count} Failed Jobs | {jobs.Count} Job Queue | Uptime {totalTime.Elapsed} | ETA {TimeSpan.FromSeconds(jobs.Count/sps)}";
 				}
 
 				if (tasks.Remove(completed, out var job))
@@ -107,6 +108,7 @@ namespace AwosFramework.Scraping.Hosting
 					else if (completed.IsCompletedSuccessfully && completed.Result.Failed == false)
 					{
 						_logger.LogInformation("Scraped {url} successfully", job.Uri);
+						successCount++;
 						var result = completed.Result;
 						if (result.Jobs != null)
 							foreach (var newJob in result.Jobs)
