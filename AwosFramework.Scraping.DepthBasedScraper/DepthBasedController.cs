@@ -13,9 +13,10 @@ namespace AwosFramework.Scraping.DepthBasedScraper
 {
 	public class DepthBasedController : ScrapeController
 	{
-		private static readonly ConcurrentBag<Uri> _queuedUrls = new ConcurrentBag<Uri>();
+		private static readonly ConcurrentDictionary<string, string> _queuedUrls = new ConcurrentDictionary<string, string>(-1, 1000000);
 		private static int _pageCount = 0;
 		private readonly DepthBasedScrapingConfig _config;
+		private static readonly UriCreationOptions UriOpts = new UriCreationOptions();
 
 		public DepthBasedController(DepthBasedScrapingConfig config)
 		{
@@ -23,24 +24,29 @@ namespace AwosFramework.Scraping.DepthBasedScraper
 		}
 
 		[DefaultRoute]
-		public async Task<IScrapeResult> ScrapePageAsync([FromJob] int depth = 0)
+		public async Task<IScrapeResult> ScrapePageAsync([FromJob] DepthData data)
 		{
-			_queuedUrls.Add(Url);
+			_queuedUrls.TryAdd(Url.PathAndQuery, null);
 			if (this.Content == null)
 				return Ok();
 
-			var result = new ScrapedPage { Depth = depth, Url = this.Url.ToString(), Html = this.Content.Text };
-			if (depth >= _config.MaxDepth)
-				return Ok(result);
+			var result = new ScrapedPage { Depth = data.Depth, Url = this.Url.ToString(), Html = this.Content.Text };
+			if (data.Depth >= _config.MaxDepth)
+					return Ok(result);
 
-			if (Interlocked.Increment(ref _pageCount) > _config.MaxPages)
-				return Ok(result);
-
+			int prio = 0;
 			var links = this.Content.DocumentNode.SelectNodes("//a[@href]")?
 				.Select(link => link.GetAttributeValue("href", null))
-				.Select(x => new Uri(this.Url, x))
-				.Where(link => _queuedUrls.ContainsAndAdd(link) == false && link.Scheme.StartsWith("http") && (link.AbsolutePath.Contains('.') == false || link.AbsolutePath.EndsWith(".html", StringComparison.OrdinalIgnoreCase)))
-				.Select(link => HttpJob.Get(link, data: depth+1));
+				.SelectWhere(x => (Uri.TryCreate(data.BaseUri, x, out var uri), uri))
+				.Where(link =>
+				{
+					var lastSegment = link.Segments.LastOrDefault();
+					return data.BaseUri.IsBaseOf(link) &&
+					link.Scheme.StartsWith("http") &&	
+					(lastSegment == null || lastSegment.Contains('.') == false || lastSegment.EndsWith(".html", StringComparison.OrdinalIgnoreCase)) &&
+					_queuedUrls.TryAdd(link.PathAndQuery, null) == false;
+				})
+				.Select(link => HttpJob.Get(link, prio++, data with { Depth = data.Depth+1 }));
 
 			return OkFollow(links, result);
 		}

@@ -1,4 +1,5 @@
 ﻿using AwosFramework.Scraping.Core;
+using AwosFramework.Scraping.Core.Results;
 using AwosFramework.Scraping.Hosting;
 using AwosFramework.Scraping.Hosting.Builders;
 using AwosFramework.Scraping.Middleware;
@@ -9,6 +10,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,6 +35,8 @@ namespace AwosFramework.Scraping.Hosting
 		public ResultHandlerCollectionFactory ResultHandlers { get; init; }
 		private static Scraper _scraper;
 		private readonly List<IScrapeJob> _initialJobs = new List<IScrapeJob>();
+		private ILogger _logger;
+		private readonly ScraperConfiguration _config;
 
 
 		public ScrapeApplication(IServiceProvider provider, MiddlewareCollectionFactory middlewareBuilder, ResultHandlerCollectionFactory resultHandlers)
@@ -40,12 +45,81 @@ namespace AwosFramework.Scraping.Hosting
 			Middleware = middlewareBuilder;
 			ResultHandlers = resultHandlers;
 			_scraper = Services.GetRequiredService<Scraper>();
+			_logger = provider.GetRequiredService<ILoggerFactory>().CreateLogger<ScrapeApplication>();
+			_config = provider.GetRequiredService<ScraperConfiguration>();
 		}
 
-
-		public Task StartAsync(CancellationToken cancellationToken = default)
+		private void StartTasks(PriorityQueue<IScrapeJob, int> queue, Dictionary<Task<IScrapeResult>, IScrapeJob> target, ScrapeEngine engine)
 		{
-			return _scraper.RunAsync(_initialJobs.ToArray());
+			while (target.Count < _config.MaxTasks && queue.Count > 0)
+			{
+				var job = queue.Dequeue();
+				_logger.LogInformation("Begin Scraping {url}", job.Uri);
+				target[engine.ScrapeAsync(job)] = job;
+			}
+		}
+
+		public async Task StartAsync(CancellationToken cancellationToken = default)
+		{
+			ulong resultCount = 0;
+			long totalTicks = 0;
+			var watch = new Stopwatch();
+			var totalTime = new Stopwatch();
+			var jobs = new PriorityQueue<IScrapeJob, int>(_initialJobs.Select(x => (x, x.Priority)));
+			var failed = new List<IScrapeJob>();
+			var engine = Services.GetRequiredService<ScrapeEngine>();
+			var tasks = new Dictionary<Task<IScrapeResult>, IScrapeJob>();
+			StartTasks(jobs, tasks, engine);
+
+			watch.Start();
+			totalTime.Start();
+			while (jobs.Count > 0)
+			{
+				var completed = await Task.WhenAny(tasks.Keys);
+				totalTicks += watch.ElapsedTicks;
+				watch.Restart();
+
+				if (resultCount++ % 50 == 0)
+				{
+					var averageTicks = totalTicks / (double)resultCount;
+					var tps = averageTicks / Stopwatch.Frequency * 1000;
+					_logger.LogInformation("Average time per scrape: {average}ms", tps);
+					var sps = resultCount / (totalTicks / (double)Stopwatch.Frequency);
+					Console.Title = $"{_config.ScraperName} | {tps:#.00ms} ms/Job | {sps:#.00} Jobs/s | {resultCount} Results | {jobs.Count} Job Queue | Uptime {totalTime.Elapsed} | ETA {TimeSpan.FromSeconds(jobs.Count/sps)}";
+				}
+
+				if (tasks.Remove(completed, out var job))
+				{
+					if (completed.IsFaulted || completed.Result.Failed)
+					{
+						_logger.LogError(completed.Exception, "Error scraping {url}", job.Uri);
+						if (job.Retry(_config.MaxRetries))
+						{
+							jobs.Enqueue(job, job.Priority+_config.RetryPriorityPunishment);
+						}
+						else
+						{
+							_logger.LogError("Failed to scrape {url} after {retries} retries", job.Uri, _config.MaxRetries);
+							failed.Add(job);
+						}
+					}
+					else if (completed.IsCompletedSuccessfully && completed.Result.Failed == false)
+					{
+						_logger.LogInformation("Scraped {url} successfully", job.Uri);
+						var result = completed.Result;
+						if (result.Jobs != null)
+							foreach (var newJob in result.Jobs)
+								jobs.Enqueue(newJob, newJob.Priority);
+					}
+				}
+
+				StartTasks(jobs, tasks, engine);
+			}
+
+			totalTime.Stop();
+			watch.Stop();
+
+			_logger.LogInformation("Done scraping, took {timespan}", totalTime.Elapsed);
 		}
 
 		public Task StopAsync(CancellationToken cancellationToken = default)
