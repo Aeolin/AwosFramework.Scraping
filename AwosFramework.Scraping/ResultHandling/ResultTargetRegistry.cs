@@ -22,7 +22,7 @@ namespace AwosFramework.Scraping.ResultHandling
 		public void SaveAll()
 		{
 			foreach (var handler in _handlers)
-				handler.Save();
+				handler.SaveAsync().RunSynchronously();
 		}
 
 		public void Dispose()

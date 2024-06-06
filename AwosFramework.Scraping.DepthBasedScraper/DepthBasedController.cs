@@ -26,7 +26,7 @@ namespace AwosFramework.Scraping.DepthBasedScraper
 		[DefaultRoute]
 		public async Task<IScrapeResult> ScrapePageAsync([FromJob] DepthData data)
 		{
-			_queuedUrls.TryAdd(Url.PathAndQuery, null);
+			_queuedUrls.TryAdd(Url.GetLeftPart(UriPartial.Query), null);
 			if (this.Content == null)
 				return Ok();
 
@@ -44,7 +44,7 @@ namespace AwosFramework.Scraping.DepthBasedScraper
 					return data.BaseUri.IsBaseOf(link) &&
 					link.Scheme.StartsWith("http") &&	
 					(lastSegment == null || lastSegment.Contains('.') == false || lastSegment.EndsWith(".html", StringComparison.OrdinalIgnoreCase)) &&
-					_queuedUrls.TryAdd(link.PathAndQuery, null) == false;
+					_queuedUrls.TryAdd(link.GetLeftPart(UriPartial.Query), null) == false;
 				})
 				.Select(link => HttpJob.Get(link, prio++, data with { Depth = data.Depth+1 }));
 

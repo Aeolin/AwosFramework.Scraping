@@ -14,7 +14,7 @@ using System.Threading.Tasks.Dataflow;
 
 namespace AwosFramework.Scraping.Core
 {
-	public class ScrapeEngine
+	public class ScrapeEngine : IDisposable
 	{
 		private IServiceProvider _provider;
 		private ILogger _logger;
@@ -72,6 +72,11 @@ namespace AwosFramework.Scraping.Core
 				context.Dispose();
 				IsScraping = false;
 			}
+		}
+
+		public void Dispose()
+		{
+			_middleware.Dispose();
 		}
 	}
 }

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AwosFramework.Scraping.ResultHandling.Json
 {
@@ -19,6 +20,7 @@ namespace AwosFramework.Scraping.ResultHandling.Json
 
 		private ConcurrentBag<T> _bag = new ConcurrentBag<T>();
 		private Func<T, bool> _filter;
+		private SemaphoreSlim _saveSemaphore;
 
 		public JsonResultHandler(string directory, int batchSize, string fileName = null, Func<T, bool> filter = null, JsonSerializerOptions serializerOptions = null)
 		{
@@ -28,45 +30,36 @@ namespace AwosFramework.Scraping.ResultHandling.Json
 			FileName = fileName ?? $"{typeof(T).Name.ToLower()}_batch_{{0}}.json";
 			SerializerOptions = serializerOptions ?? JsonSerializerOptions.Default;
 			_filter = filter;
+			_saveSemaphore = new SemaphoreSlim(1);
 		}
 
-		[HandleResult(ResultMatchType.Exact)]
-		public void Handle(T data)
+		public async Task SaveAsync(bool respectBatchSize = false)
 		{
-			if (_filter != null && _filter(data) == false)
-				return;
-
-			_bag.Add(data);
-			if (_bag.Count >= BatchSize)
-			{
-				Save();
-			}
-		}
-
-		public void Save()
-		{
-			if (_bag.Count > 0)
+			await _saveSemaphore.WaitAsync();
+			if ((respectBatchSize == false || _bag.Count >= BatchSize) && _bag.Count > 0 )
 			{
 				var data = Interlocked.Exchange(ref _bag, new ConcurrentBag<T>());
 				using var file = File.Create(Path.Combine(Directory, string.Format(FileName, BatchCount++, BatchSize)));
-				JsonSerializer.Serialize(file, data, SerializerOptions);
+				await JsonSerializer.SerializeAsync(file, data, SerializerOptions);
 			}
+			_saveSemaphore.Release();
 		}
 
-		public void Dispose()
+		
+
+		public async Task HandleAsync(object data)
 		{
-			Save();
+			if (data is not T tData || (_filter != null && _filter(tData) == false))
+				return;
+
+			_bag.Add(tData);
+			if (_bag.Count == BatchSize)
+				await SaveAsync(true);
+			
 		}
 
-		public Task HandleAsync(object obj)
-		{
-			Handle((T)obj);
-			return Task.CompletedTask;
-		}
+		public Task SaveAsync() => SaveAsync(false);
 
-		public bool CanHandle(object obj)
-		{
-			return obj is T tObj && (_filter?.Invoke(tObj) ?? true);
-		}
+		public void Dispose() => SaveAsync().RunSynchronously();
 	}
 }

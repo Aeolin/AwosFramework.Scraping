@@ -22,13 +22,9 @@ namespace AwosFramework.Scraping.Middleware.Result
 			if (result.Failed == false || context.ScrapeJob.AllowPartialResult)
 			{
 				foreach (var handler in _resultHandlers)
-				{
 					foreach (var obj in result.Data)
-					{
-						if (handler.CanHandle(obj))
-							await handler.HandleAsync(obj);
-					}
-				}
+						await handler.HandleAsync(obj);
+
 			}
 
 			return true;

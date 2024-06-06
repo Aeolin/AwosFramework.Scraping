@@ -9,7 +9,6 @@ namespace AwosFramework.Scraping.ResultHandling
 	public interface IResultHandler : IDisposable
 	{
 		public Task HandleAsync(object obj);
-		public bool CanHandle(object obj);
-		public void Save();
+		public Task SaveAsync();
 	}
 }

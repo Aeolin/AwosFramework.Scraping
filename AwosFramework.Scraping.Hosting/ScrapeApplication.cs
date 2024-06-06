@@ -3,6 +3,7 @@ using AwosFramework.Scraping.Core.Results;
 using AwosFramework.Scraping.Hosting;
 using AwosFramework.Scraping.Hosting.Builders;
 using AwosFramework.Scraping.Middleware;
+using AwosFramework.Scraping.Middleware.Result;
 using AwosFramework.Scraping.ResultHandling;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -116,6 +117,11 @@ namespace AwosFramework.Scraping.Hosting
 				StartTasks(jobs, tasks, engine);
 			}
 
+			var results = Services.GetService<ResultHandlerCollection>();
+			if (results != null)
+				await Task.WhenAll(results.Select(x => x.SaveAsync()));
+
+			engine.Dispose();
 			totalTime.Stop();
 			watch.Stop();
 
