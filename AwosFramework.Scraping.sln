@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AwosFramework.Scraping.Geni
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{137F8A6B-829A-48D8-81FB-0D171F92A28C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AwosFramework.Scraping.DepthBasedScraper", "AwosFramework.Scraping.DepthBasedScraper\AwosFramework.Scraping.DepthBasedScraper.csproj", "{3BBC3FC6-8E2D-459B-A2D2-86231964D1C8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AwosFramework.Scraping.DepthBasedScraper", "AwosFramework.Scraping.DepthBasedScraper\AwosFramework.Scraping.DepthBasedScraper.csproj", "{3BBC3FC6-8E2D-459B-A2D2-86231964D1C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AwosFramework.Scraping.PuppeteerRequestor", "AwosFramework.Scraping.Puppeteer\AwosFramework.Scraping.PuppeteerRequestor.csproj", "{EF307BBC-7BBF-4CE1-9173-C95F137A3C4B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +43,10 @@ Global
 		{3BBC3FC6-8E2D-459B-A2D2-86231964D1C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BBC3FC6-8E2D-459B-A2D2-86231964D1C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3BBC3FC6-8E2D-459B-A2D2-86231964D1C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF307BBC-7BBF-4CE1-9173-C95F137A3C4B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF307BBC-7BBF-4CE1-9173-C95F137A3C4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF307BBC-7BBF-4CE1-9173-C95F137A3C4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF307BBC-7BBF-4CE1-9173-C95F137A3C4B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
