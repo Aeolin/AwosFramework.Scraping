@@ -13,6 +13,7 @@ namespace AwosFramework.Scraping.Middleware
 		public IScrapeJob ScrapeJob { get; init; }
 		public IServiceProvider ServiceProvider { get; init; }
 		public ILogger Logger { get; init; }
+		public bool RequestHandeled { get; private set; } = false;
 		private readonly Dictionary<(Type, object), object> _components = new Dictionary<(Type, object), object>();
 
 
@@ -21,6 +22,12 @@ namespace AwosFramework.Scraping.Middleware
 			ScrapeJob=scrapeJob;
 			ServiceProvider=provider;
 			Logger = logger;
+		}
+
+		public void AddRequestResult<T>(T obj, string key = null)
+		{
+			RequestHandeled = true;
+			AddComponent<T>(obj, key);
 		}
 
 		public void AddComponent<T>(T obj, string key = null)

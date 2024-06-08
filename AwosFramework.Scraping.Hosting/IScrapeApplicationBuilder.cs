@@ -18,7 +18,5 @@ namespace AwosFramework.Scraping.Hosting
 
 		public IScrapeApplicationBuilder AddInitialJobs(params IScrapeJob[] jobs);
 		public IScrapeApplicationBuilder AddInitialJobs(IEnumerable<IScrapeJob> jobs);
-		public IScrapeApplicationBuilder UseMiddleware(Func<IServiceProvider, IMiddleware> middlewareFactory);
-		public IScrapeApplicationBuilder UseResultHandler(Func<IServiceProvider, IResultHandler> resultHandlerFactory);
 	}
 }

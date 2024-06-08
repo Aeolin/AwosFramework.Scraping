@@ -20,16 +20,10 @@ using System.Threading.Tasks;
 namespace AwosFramework.Scraping.Hosting.Middleware
 {
 	public static class MiddlewareExtensions
-	{
-		public static IScrapeApplicationBuilder UseInjectedMiddleware<T>(this IScrapeApplicationBuilder builder) where T : IMiddleware
+	{	
+		public static IScrapeApplicationBuilder UseMiddleware<T>(this IScrapeApplicationBuilder builder, Func<IServiceProvider, T> factory) where T : IMiddleware
 		{
-			builder.UseMiddleware(x => ActivatorUtilities.CreateInstance<T>(x));
-			return builder;
-		}
-
-		public static IScrapeApplicationBuilder UseMiddleware<T>(this IScrapeApplicationBuilder builder) where T : IMiddleware, new()
-		{
-			builder.UseMiddleware(new T());
+			builder.Middleware.AddMiddleware(factory);
 			return builder;
 		}
 
@@ -38,6 +32,44 @@ namespace AwosFramework.Scraping.Hosting.Middleware
 			builder.UseMiddleware(x => middleware);
 			return builder;
 		}
+
+		public static IScrapeApplicationBuilder UseMiddleware<T>(this IScrapeApplicationBuilder builder) where T : IMiddleware, new()
+		{
+			builder.UseMiddleware(x => new T());
+			return builder;
+		}
+
+		public static IScrapeApplicationBuilder UseUniqueMiddleware<T>(this IScrapeApplicationBuilder builder, Func<IServiceProvider, T> factory) where T : IMiddleware
+		{
+			builder.Middleware.AddUniqueMiddleware(factory);
+			return builder;
+		}
+
+		public static IScrapeApplicationBuilder UseUniqueMiddleware<T>(this IScrapeApplicationBuilder builder) where T : IMiddleware, new()
+		{
+			builder.UseUniqueMiddleware(x => new T());
+			return builder;
+		}
+
+		public static IScrapeApplicationBuilder UseUniqueMiddleware<T>(this IScrapeApplicationBuilder builder, T instance) where T : IMiddleware
+		{
+			builder.UseUniqueMiddleware(x => instance);
+			return builder;
+		}
+
+		public static IScrapeApplicationBuilder UseInjectedMiddleware<T>(this IScrapeApplicationBuilder builder) where T : IMiddleware
+		{
+			builder.UseMiddleware(x => ActivatorUtilities.CreateInstance<T>(x));
+			return builder;
+		}
+
+		public static IScrapeApplicationBuilder UseUniqueInjectedMiddleware<T>(this IScrapeApplicationBuilder builder) where T : IMiddleware
+		{
+			builder.Middleware.AddUniqueMiddleware(x => ActivatorUtilities.CreateInstance<T>(x));
+			return builder;
+		}
+
+
 
 		public static IScrapeApplicationBuilder UseRouting(this IScrapeApplicationBuilder builder)
 		{
@@ -92,41 +124,60 @@ namespace AwosFramework.Scraping.Hosting.Middleware
 			return builder;
 		}
 
-		public static IScrapeApplicationBuilder UseHttpRequests(this IScrapeApplicationBuilder builder, Action<HttpRequestMiddlewareOptions> configure = null)
-		{
-			var config = new HttpRequestMiddlewareOptions();
-			configure?.Invoke(config);
-			builder.UseMiddleware<HttpRequestMiddleware>();
-			
-			if (config.UseHtml)
-				builder.UseMiddleware<HtmlResultMiddleware>();
+		public static IScrapeApplicationBuilder UseHttpRequests(this IScrapeApplicationBuilder builder)
+		{	
+			builder.UseMiddleware(x => x.GetRequiredService<HttpRequestMiddleware>());
+			return builder;
+		}
 
-			if (config.UseJson)
-				builder.UseMiddleware<JsonResultMiddleware>();
-			
+		public static IScrapeApplicationBuilder UseDefaultContent(this IScrapeApplicationBuilder builder)
+		{
+			builder.UseHtmlContent();
+			builder.UseJsonContent();
+			return builder;
+		}
+
+		public static IScrapeApplicationBuilder UseHtmlContent(this IScrapeApplicationBuilder builder)
+		{
+			builder.UseUniqueMiddleware<HtmlResultMiddleware>();
+			return builder;
+		}
+
+		public static IScrapeApplicationBuilder UseJsonContent(this IScrapeApplicationBuilder builder)
+		{
+			builder.UseUniqueMiddleware<JsonResultMiddleware>();
 			return builder;
 		}
 
 		public static IScrapeApplicationBuilder UseResultHandling(this IScrapeApplicationBuilder builder)
 		{
-			builder.UseInjectedMiddleware<ResultHandlingMiddleware>();
+			builder.UseUniqueInjectedMiddleware<ResultHandlingMiddleware>();
 			return builder;
 		}
 
-		public static IScrapeApplicationBuilder AddResultHandler(this IScrapeApplicationBuilder builder, IResultHandler handler)
+		public static IScrapeApplicationBuilder UseResultHandler(this IScrapeApplicationBuilder builder, Func<IServiceProvider, IResultHandler> factory)
 		{
+			builder.ResultHandlers.AddResultHandler(factory);
+			return builder;
+		}
+
+		public static IScrapeApplicationBuilder UseResultHandler(this IScrapeApplicationBuilder builder, IResultHandler handler)
+		{
+			builder.UseResultHandling();
 			builder.UseResultHandler(x => handler);
 			return builder;
 		}
 
-		public static IScrapeApplicationBuilder AddResultHandler<T>(this IScrapeApplicationBuilder builder) where T : IResultHandler, new()
+		public static IScrapeApplicationBuilder UseResultHandler<T>(this IScrapeApplicationBuilder builder) where T : IResultHandler, new()
 		{
-			builder.AddResultHandler(new T());
+			builder.UseResultHandling();
+			builder.UseResultHandler(new T());
 			return builder;
 		}
 
-		public static IScrapeApplicationBuilder AddInjectedResultHandler<T>(this IScrapeApplicationBuilder builder) where T : IResultHandler
+		public static IScrapeApplicationBuilder UseInjectedResultHandler<T>(this IScrapeApplicationBuilder builder) where T : IResultHandler
 		{
+			builder.UseResultHandling();
 			builder.UseResultHandler(x => ActivatorUtilities.CreateInstance<T>(x));
 			return builder;
 		}

@@ -9,11 +9,11 @@ namespace AwosFramework.Scraping.Hosting.ResultHandlers
 {
 	public static class Extensions
 	{
-		public static IScrapeApplicationBuilder AddJsonResultHandler<T>(this IScrapeApplicationBuilder scrapingBuilder, Action<JsonResultHandlerBuilder<T>> configure)
+		public static IScrapeApplicationBuilder UseJsonResultHandler<T>(this IScrapeApplicationBuilder scrapingBuilder, Action<JsonResultHandlerBuilder<T>> configure)
 		{
 			var builder = new JsonResultHandlerBuilder<T>();
 			configure?.Invoke(builder);
-			scrapingBuilder.AddResultHandler(builder.Build());
+			scrapingBuilder.UseResultHandler(builder.Build());
 			return scrapingBuilder;
 		}
 	}

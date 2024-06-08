@@ -1,6 +1,8 @@
 ﻿using AwosFramework.Scraping.Middleware;
+using AwosFramework.Scraping.Middleware.Http;
 using HtmlAgilityPack;
 using PuppeteerSharp;
+using System.Text;
 
 namespace AwosFramework.Scraping.PuppeteerRequestor
 {
@@ -15,6 +17,9 @@ namespace AwosFramework.Scraping.PuppeteerRequestor
 
 		public async Task<bool> ExecuteAsync(MiddlewareContext context)
 		{
+			if (context.RequestHandeled) // if request already has been handeled
+				return true;
+
 			var browser = await _browserPool.GetBrowserAsync();
 			
 			try
@@ -22,9 +27,8 @@ namespace AwosFramework.Scraping.PuppeteerRequestor
 				var page = await browser.NewPageAsync();
 				await page.GoToAsync(context.ScrapeJob.Uri.ToString(), WaitUntilNavigation.Networkidle2);
 				var dom = await page.GetContentAsync();
-				var htmlDoc = new HtmlDocument();
-				htmlDoc.LoadHtml(dom);
-				context.AddComponent(htmlDoc);
+				var result = new HttpResponseData(new MemoryStream(Encoding.UTF8.GetBytes(dom)), "text/html");
+				context.AddRequestResult(result);
 				return true;
 			}
 			finally
