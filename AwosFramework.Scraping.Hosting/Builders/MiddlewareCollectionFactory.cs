@@ -19,7 +19,8 @@ namespace AwosFramework.Scraping.Hosting.Builders
 			_middlewareTypes.Add(typeof(T));
 		}
 
-		public void AddUniqueMiddleware<T>(Func<IServiceProvider, T> middleware) where T : IMiddleware){
+		public void AddUniqueMiddleware<T>(Func<IServiceProvider, T> middleware) where T : IMiddleware
+		{
 			if (HasMiddleware<T>())
 				return;
 

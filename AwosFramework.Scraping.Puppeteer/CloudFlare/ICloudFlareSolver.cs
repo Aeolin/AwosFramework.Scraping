@@ -8,6 +8,6 @@ namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare
 {
 	public interface ICloudFlareSolver
 	{
-		public Task<bool> SolveAsync(ICloudFlareChallenge challenge, CloudFlareDataStore data);
+		public Task<CloudFlareData> SolveAsync(ICloudFlareChallenge challenge);
 	}
 }

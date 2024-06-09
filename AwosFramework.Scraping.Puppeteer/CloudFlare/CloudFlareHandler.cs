@@ -38,7 +38,9 @@ namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare
 				}
 				else
 				{
-					var solved = await _solver.SolveAsync(challenge, _data);
+					var solved = await _solver.SolveAsync(challenge);
+					if (solved != null)
+						_data.SetCloudFlareData(solved);
 				}
 			}
 

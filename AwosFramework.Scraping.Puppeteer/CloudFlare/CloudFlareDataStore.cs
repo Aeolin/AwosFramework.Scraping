@@ -28,6 +28,11 @@ namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare
 			_cfDomains[uri.GetLeftPart(UriPartial.Authority)] = data;
 		}
 
+		public void SetCloudFlareData(CloudFlareData data)
+		{
+			_cfDomains[data.Domain.GetLeftPart(UriPartial.Authority)] = data;
+		}
+
 		public bool IsCloudFlareDomain(Uri domain)
 		{
 			return _cfDomains.ContainsKey(domain.GetLeftPart(UriPartial.Authority));

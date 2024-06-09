@@ -1,6 +1,7 @@
 ﻿using PuppeteerExtraSharp;
 using PuppeteerExtraSharp.Plugins.ExtraStealth;
 using PuppeteerSharp;
+using PuppeteerSharp.Input;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -10,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare
 {
-	public class CloudFlareSolver : ICloudFlareSolver
+	public class CloudFlareSolver : ICloudFlareSolver, IDisposable
 	{
 		private IBrowser _browser;
 		private readonly SemaphoreSlim _browserSemaphore = new SemaphoreSlim(1);
@@ -25,42 +26,65 @@ namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare
 		{
 			var extra = new PuppeteerExtra();
 			extra.Use(new StealthPlugin());
+			var fetcher = new BrowserFetcher(SupportedBrowser.Chromium);
+			var browser = await fetcher.DownloadAsync(BrowserTag.Latest);
 			_browser = await extra.LaunchAsync(new LaunchOptions
 			{
-				Headless = true
+				Browser = SupportedBrowser.Chromium,
+				ExecutablePath = browser.GetExecutablePath(),
+				Headless = false
 			});
 		}
 
-		public async Task<bool> SolveAsync(ICloudFlareChallenge challenge, CloudFlareDataStore data)
+		public async Task<CloudFlareData> SolveAsync(ICloudFlareChallenge challenge)
 		{
 			if (challenge is JavaScriptChallenge jsChallenge)
-				return await SolveJavaScriptAsync(jsChallenge, data);
+				return await SolveJavaScriptAsync(jsChallenge);
+
+			return null;
 		}
 
-		private async Task<bool> SolveJavaScriptAsync(JavaScriptChallenge jsChallenge, CloudFlareDataStore data)
+		private async Task<CloudFlareData> SolveJavaScriptAsync(JavaScriptChallenge jsChallenge)
 		{
 			await _initTask;
 			await _browserSemaphore.WaitAsync();
 			try
 			{
 				var page = await _browser.NewPageAsync();
-				await page.SetContentAsync(jsChallenge.Challenge);
-				var cookies = await page.GetCookiesAsync();
-				var ua = await _browser.GetUserAgentAsync();
 				string ray = null;
-				page.RequestFinished += (s, req) =>
+				page.Response += (s, response) =>
 				{
-					if (req.Request.Headers.ContainsKey("Cf-Ray"))
-						ray = req.Request.Headers["Cf-Ray"];
+					response.Response.Headers.TryGetValue("Cf-Ray", out ray);
 				};
 
-				await page.WaitForNavigationAsync();
-				var clearance = cookies.FirstOrDefault(x => x.Name == "cf_clearance")?.Value;
-				if (clearance == null)
-					return false;
+				await page.GoToAsync(jsChallenge.Domain.ToString(), WaitUntilNavigation.Networkidle0);
 
-				data.SetCloudFlareData(jsChallenge.Domain, ray, clearance, ua);
-				return true;
+				var iframe = await page.WaitForSelectorAsync("iframe");
+				if (iframe != null)
+				{
+					var contentFrame = await iframe.ContentFrameAsync();
+					var checkbox = await contentFrame.WaitForSelectorAsync("input[type='checkbox']");
+					if (checkbox != null)
+					{
+						await Task.Delay(Random.Shared.Next(50, 250));
+						await checkbox.ClickAsync();
+						await page.WaitForNetworkIdleAsync();
+					}
+				}
+
+				var cookies = await page.GetCookiesAsync();
+				var userAgent = await _browser.GetUserAgentAsync();
+
+				var cookie = string.Join("; ", cookies.Select(x => $"{x.Name}={x.Value}"));
+				await page.CloseAsync();
+				if (cookies.Any(x => x.Name == "cf_clearance") == false)
+					return null;
+
+				return new CloudFlareData(jsChallenge.Domain, ray, cookie, userAgent);
+			}
+			catch (Exception ex)
+			{
+				return null;
 			}
 			finally
 			{
@@ -68,5 +92,9 @@ namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare
 			}
 		}
 
+		public void Dispose()
+		{
+			_browser.Dispose();
+		}
 	}
 }

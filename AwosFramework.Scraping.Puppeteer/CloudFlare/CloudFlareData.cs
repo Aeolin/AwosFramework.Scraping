@@ -8,14 +8,13 @@ using System.Threading.Tasks;
 
 namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare
 {
-	public record CloudFlareData(Uri Domain, string RayId, string ClearanceToken, string UserAgent)
+	public record CloudFlareData(Uri Domain, string RayId, string Cookie, string UserAgent)
 	{
 		public void SetHeaders(HttpRequestMessage message)
 		{
 			message.Headers.UserAgent.Clear();
 			message.Headers.UserAgent.ParseAdd(UserAgent);
-			var cookie = $"cf_clearance={ClearanceToken};";
-			message.Headers.Add("Cookie", cookie);
+			message.Headers.Add("Cookie", Cookie);
 		}
 	}
 }

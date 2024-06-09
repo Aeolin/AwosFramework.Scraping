@@ -1,4 +1,5 @@
 ﻿using AwosFramework.Scraping.Hosting;
+using AwosFramework.Scraping.Hosting.Middleware;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
