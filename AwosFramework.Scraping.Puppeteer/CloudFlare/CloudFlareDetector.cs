@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AwosFramework.Scraping.PuppeteerRequestor.CloudFlare.Abstraction;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,12 +11,12 @@ namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare
 	{
 		public async Task<ICloudFlareChallenge> DetectCloudFlareAsync(HttpResponseMessage message)
 		{
-			if (message.Headers.Contains("Cf-Ray"))
+			if (message.IsSuccessStatusCode == false && message.Headers.Contains("Cf-Ray"))
 			{
 				var data = await message.Content.ReadAsStringAsync();
 				if (data.Contains("/challenge-platform"))
 				{
-					return new JavaScriptChallenge(data, message.RequestMessage.RequestUri);
+					return new CloudFlareChallenge(message.RequestMessage.RequestUri, ChallengeType.JavaScript);
 				}
 				else
 				{
@@ -24,7 +25,7 @@ namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare
 			}
 			else
 			{
-				return NoChallenge.Instance;
+				return CloudFlareChallenge.NoChallange;
 			}
 		}
 	}

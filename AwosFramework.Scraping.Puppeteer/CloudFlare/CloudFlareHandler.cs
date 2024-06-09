@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AwosFramework.Scraping.PuppeteerRequestor.CloudFlare.Abstraction;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,43 +10,19 @@ namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare
 	public class CloudFlareHandler : DelegatingHandler
 	{
 
-		private readonly ICloudFlareDetector _detector;
-		private readonly ICloudFlareSolver _solver;
-		private readonly CloudFlareDataStore _data;
+		private readonly ICloudFlareClearanceProvider _clearanceProvider;
 
-		public CloudFlareHandler(ICloudFlareDetector detector, ICloudFlareSolver solver, CloudFlareDataStore data)
+		public CloudFlareHandler(ICloudFlareClearanceProvider provider)
 		{
-			_detector=detector;
-			_solver=solver;
-			_data=data;
+			_clearanceProvider = provider;
 			InnerHandler = new HttpClientHandler();
 		}
 
 		protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
 		{
-			if (_data.TryGetCloudFlareData(request.RequestUri, out var data))
-				data.SetHeaders(request);
-
-			var result = await base.SendAsync(request, cancellationToken);
-			if (_data.IsNonCloudFlareDomain(request.RequestUri))
-				return result;
-
-			if (result.IsSuccessStatusCode == false)
-			{
-				var challenge = await _detector.DetectCloudFlareAsync(result);
-				if(challenge.Type == ChallengeType.None)
-				{
-					_data.MarkAsNonCloudFlare(request.RequestUri);
-				}
-				else
-				{
-					var solved = await _solver.SolveAsync(challenge);
-					if (solved != null)
-						_data.SetCloudFlareData(solved);
-				}
-			}
-
-			return result;
+			var clearance = await _clearanceProvider.GetCloudFlareClearanceAsync(request.RequestUri);
+			clearance?.SetHeaders(request);
+			return await base.SendAsync(request, cancellationToken);
 		}
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using AwosFramework.Scraping.Hosting;
 using AwosFramework.Scraping.Hosting.Middleware;
 using AwosFramework.Scraping.PuppeteerRequestor.CloudFlare;
+using AwosFramework.Scraping.PuppeteerRequestor.CloudFlare.Abstraction;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using System;
@@ -28,7 +29,7 @@ namespace AwosFramework.Scraping.PuppeteerRequestor
 		{
 			collection.AddSingleton<ICloudFlareDetector, CloudFlareDetector>();
 			collection.AddSingleton<ICloudFlareSolver, CloudFlareSolver>();
-			collection.AddSingleton<CloudFlareDataStore>();
+			collection.AddSingleton<ICloudFlareClearanceProvider, CloudFlareClearanceProvider>();
 			collection.AddTransient<CloudFlareHandler>();
 			collection.AddHttpClient(Options.DefaultName).AddHttpMessageHandler<CloudFlareHandler>();
 			return collection;

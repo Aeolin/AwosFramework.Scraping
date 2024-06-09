@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare
+namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare.Abstraction
 {
 	public interface ICloudFlareSolver
 	{
-		public Task<CloudFlareData> SolveAsync(ICloudFlareChallenge challenge);
+		public Task<CloudFlareClearance> SolveAsync(ICloudFlareChallenge challenge);
 	}
 }

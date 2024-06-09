@@ -1,4 +1,8 @@
-﻿using PuppeteerExtraSharp;
+﻿using AwosFramework.Scraping.PuppeteerRequestor.CloudFlare.Abstraction;
+using AwosFramework.Utils;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Primitives;
+using PuppeteerExtraSharp;
 using PuppeteerExtraSharp.Plugins.ExtraStealth;
 using PuppeteerSharp;
 using PuppeteerSharp.Input;
@@ -6,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -16,85 +21,147 @@ namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare
 		private IBrowser _browser;
 		private readonly SemaphoreSlim _browserSemaphore = new SemaphoreSlim(1);
 		private readonly Task _initTask;
+		private readonly LaunchOptions _launchOptions;
+		private readonly ILogger _logger;
 
-		public CloudFlareSolver()
+		public CloudFlareSolver(LaunchOptions launcOptions = null, ILoggerFactory factory = null)
 		{
-			_initTask = InitializeAsync();
+			_logger = factory?.CreateLogger<CloudFlareSolver>();
+			_launchOptions = launcOptions ?? new LaunchOptions
+			{
+				Browser = SupportedBrowser.Chromium,
+				Headless = false
+			};
+
+			_initTask = InitializeAsync(factory);
 		}
 
-		private async Task InitializeAsync()
+		private async Task InitializeAsync(ILoggerFactory factory)
 		{
 			var extra = new PuppeteerExtra();
 			extra.Use(new StealthPlugin());
-			var fetcher = new BrowserFetcher(SupportedBrowser.Chromium);
-			var browser = await fetcher.DownloadAsync(BrowserTag.Latest);
-			_browser = await extra.LaunchAsync(new LaunchOptions
+			if (_launchOptions.ExecutablePath == null)
 			{
-				Browser = SupportedBrowser.Chromium,
-				ExecutablePath = browser.GetExecutablePath(),
-				Headless = false
-			});
+				_logger?.LogInformation("Donwloading browser...");
+				var fetcher = new BrowserFetcher(new BrowserFetcherOptions
+				{
+					Browser = _launchOptions.Browser,
+					Path = "./cf-solver-cache"
+				});
+
+				var browser = await fetcher.DownloadAsync(BrowserTag.Latest);
+				_launchOptions.ExecutablePath = browser.GetExecutablePath();
+				_logger?.LogInformation("Downloaded to {path}", _launchOptions.ExecutablePath);
+			}
+			_browser = await extra.LaunchAsync(_launchOptions, factory);
 		}
 
-		public async Task<CloudFlareData> SolveAsync(ICloudFlareChallenge challenge)
+		public async Task<CloudFlareClearance> SolveAsync(ICloudFlareChallenge challenge)
 		{
-			if (challenge is JavaScriptChallenge jsChallenge)
-				return await SolveJavaScriptAsync(jsChallenge);
 
-			return null;
+			switch (challenge.Type)
+			{
+				case ChallengeType.None:
+					return null;
+
+				case ChallengeType.JavaScript:
+					return await SolveJavaScriptAsync(challenge);
+
+				default:
+					return null;
+			}
 		}
 
-		private async Task<CloudFlareData> SolveJavaScriptAsync(JavaScriptChallenge jsChallenge)
+		private async Task<CloudFlareClearance> SolveJavaScriptAsync(ICloudFlareChallenge challenge)
 		{
 			await _initTask;
 			await _browserSemaphore.WaitAsync();
+			var loggerScope = _logger?.BeginScope("CloudFlareSolver[{domain}]", challenge.Url.Host);
+			_logger?.LogInformation("Begin solving JavaScript challenge");
 			try
 			{
-				var page = await _browser.NewPageAsync();
 				string ray = null;
+				var cookieSource = new TaskCompletionSource<CookieContainer>();
+				var page = (await _browser.PagesAsync()).First();
+
 				page.Response += (s, response) =>
 				{
-					response.Response.Headers.TryGetValue("Cf-Ray", out ray);
+					_logger?.LogDebug("Got response: {response}, status: {status}", response.Response.Url, response.Response.Status);
+					if (ray == null && response.Response.Headers.TryGetValue("Cf-Ray", out ray))
+						_logger?.LogInformation("Fetched Cf-Ray: {ray}", ray);
+
+					if (response.Response.Headers.TryGetValue("Set-Cookie", out var cookieHeader))
+					{
+						var cookies = cookieHeader.ReplaceLineEndings("\n").Split("\n");
+
+						var container = new CookieContainer();
+						foreach (var cookie in cookies)
+							container.SetCookies(challenge.Url, cookie);
+
+						var collection = container.GetCookies(challenge.Url);
+						if (collection.Any(x => x.Name == "cf_clearance"))
+						{
+							_logger?.LogInformation("Fetched cf_clearance: {clearance}", cookieHeader);
+							cookieSource.TrySetResult(container);
+						}
+					}
 				};
 
-				await page.GoToAsync(jsChallenge.Domain.ToString(), WaitUntilNavigation.Networkidle0);
-
-				var iframe = await page.WaitForSelectorAsync("iframe");
-				if (iframe != null)
+				await page.GoToAsync(challenge.Url.ToString(), WaitUntilNavigation.Networkidle0);
+				try
 				{
-					var contentFrame = await iframe.ContentFrameAsync();
-					var checkbox = await contentFrame.WaitForSelectorAsync("input[type='checkbox']");
-					if (checkbox != null)
+					var iframe = await page.WaitForSelectorAsync("iframe");
+					if (iframe != null)
 					{
-						await Task.Delay(Random.Shared.Next(50, 250));
-						await checkbox.ClickAsync();
-						await page.WaitForNetworkIdleAsync();
+						var contentFrame = await iframe.ContentFrameAsync();
+						_logger?.LogInformation("Found challenge IFrame {source}", contentFrame.Page.Url);
+						var checkbox = await contentFrame.WaitForSelectorAsync("input[type='checkbox']");
+						if (checkbox != null)
+						{
+							_logger?.LogInformation("Found checkbox {element}", checkbox);
+							await checkbox.ClickAsync();
+							_logger?.LogInformation("Clicked checkbox");
+						}
 					}
 				}
+				catch (PuppeteerException ex)
+				{
+					_logger?.LogError(ex, $"Error while clicking checkbox occured");
+					await Task.Delay(3000);
+				}
 
-				var cookies = await page.GetCookiesAsync();
 				var userAgent = await _browser.GetUserAgentAsync();
-
-				var cookie = string.Join("; ", cookies.Select(x => $"{x.Name}={x.Value}"));
-				await page.CloseAsync();
-				if (cookies.Any(x => x.Name == "cf_clearance") == false)
+				var cookieTask = await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(30)), cookieSource.Task);
+				//await page.CloseAsync();
+				await page.GoToAsync("about:blank");
+				if (cookieTask is not Task<CookieContainer> cookies)
+				{
+					_logger?.LogWarning("Failed to solve challenge for due to timeout");
 					return null;
+				}
 
-				return new CloudFlareData(jsChallenge.Domain, ray, cookie, userAgent);
+				var cookieContainer = cookies.Result;
+				var collection = cookieContainer.GetCookies(challenge.Url);
+				var cookieHeader = cookieContainer.GetCookieHeader(challenge.Url);
+				var clearanceCookie = collection.First(x => x.Name == "cf_clearance");
+				_logger?.LogInformation("Solved challenge, clearance: {clearance}, expiry: {expiry}", clearanceCookie.Value, clearanceCookie.Expires);
+				return new CloudFlareClearance(challenge.Url, ray, cookieHeader, userAgent, clearanceCookie.Expires);
 			}
 			catch (Exception ex)
 			{
+				_logger?.LogError(ex, "Failed to solve challenge for {domain}", challenge.Url);
 				return null;
 			}
 			finally
 			{
 				_browserSemaphore.Release();
+				loggerScope?.Dispose();
 			}
 		}
 
 		public void Dispose()
 		{
-			_browser.Dispose();
+			_browser?.Dispose();
 		}
 	}
 }

@@ -1,19 +1,28 @@
 ﻿
 using AwosFramework.Scraping.PuppeteerRequestor.CloudFlare;
+using Microsoft.Extensions.Logging;
+using System.Net;
 
-using (var solver = new CloudFlareSolver())
+var factory = LoggerFactory.Create(x =>
+{
+	x.AddSimpleConsole(opts =>
+	{
+		opts.IncludeScopes = true;
+		opts.SingleLine = false;
+		opts.TimestampFormat = "HH:mm:ss ";
+	});
+	x.SetMinimumLevel(LogLevel.Debug);
+});
+
+using (var solver = new CloudFlareSolver(factory: factory))
 {
 	var detector = new CloudFlareDetector();
-	var data = new CloudFlareDataStore();
-	var handler = new CloudFlareHandler(detector, solver, data);
+	var clearance = new CloudFlareClearanceProvider(detector, solver);
+	var handler = new CloudFlareHandler(clearance);
 	var client = new HttpClient(handler);
-	handler.InnerHandler = new HttpClientHandler();
-
-	// should fail
-	var response = await client.GetAsync("https://cf-protected-url");
 
 	// should succeed
-	response = await client.GetAsync("https://cf-protected-url");
+	var response = await client.GetAsync("https://nowsecure.nl");
 	Console.WriteLine(response.StatusCode);
 	Console.WriteLine(await response.Content.ReadAsStringAsync());
 }
