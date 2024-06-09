@@ -1,0 +1,6 @@
+[submodule "AwosFramework.Scraping.Puppeteer/Puppeteer-sharp-extra"]
+	path = AwosFramework.Scraping.Puppeteer/Puppeteer-sharp-extra
+	url = https://github.com/Overmiind/Puppeteer-sharp-extra
+[submodule "AwosFramework.Scraping.Puppeteer/libs/Puppeteer-sharp-extra"]
+	path = AwosFramework.Scraping.Puppeteer/libs/Puppeteer-sharp-extra
+	url = https://github.com/Overmiind/Puppeteer-sharp-extra
