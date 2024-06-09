@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AwosFramework.Scraping.Dept
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AwosFramework.Scraping.PuppeteerRequestor", "AwosFramework.Scraping.Puppeteer\AwosFramework.Scraping.PuppeteerRequestor.csproj", "{EF307BBC-7BBF-4CE1-9173-C95F137A3C4B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AwosFramework.Scraping.Playground", "AwosFramework.Scraping.Playground\AwosFramework.Scraping.Playground.csproj", "{6717FD7C-45D3-41CF-B3A5-D458E0AF55A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -47,6 +49,10 @@ Global
 		{EF307BBC-7BBF-4CE1-9173-C95F137A3C4B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EF307BBC-7BBF-4CE1-9173-C95F137A3C4B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EF307BBC-7BBF-4CE1-9173-C95F137A3C4B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6717FD7C-45D3-41CF-B3A5-D458E0AF55A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6717FD7C-45D3-41CF-B3A5-D458E0AF55A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6717FD7C-45D3-41CF-B3A5-D458E0AF55A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6717FD7C-45D3-41CF-B3A5-D458E0AF55A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -54,6 +60,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{7C7D395E-A140-4277-B3CC-299FB4AD38B9} = {137F8A6B-829A-48D8-81FB-0D171F92A28C}
 		{3BBC3FC6-8E2D-459B-A2D2-86231964D1C8} = {137F8A6B-829A-48D8-81FB-0D171F92A28C}
+		{6717FD7C-45D3-41CF-B3A5-D458E0AF55A1} = {137F8A6B-829A-48D8-81FB-0D171F92A28C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A007EE9D-CF53-4BF3-9FA4-68D36035F602}

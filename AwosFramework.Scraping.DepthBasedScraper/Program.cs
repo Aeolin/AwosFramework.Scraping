@@ -15,7 +15,7 @@ builder.Services.AddBinderFactory(x => x.AddInbuiltBinders());
 builder.Services.AddOptions<DepthBasedScrapingConfig>();	
 builder.Services.Configure<DepthBasedScrapingConfig>(builder.Configuration.GetSection("ScrapeSettings"));
 builder.Services.AddTransient(x => x.GetRequiredService<IOptions<DepthBasedScrapingConfig>>().Value);
-builder.Services.AddHttpClient();
+builder.Services.AddHttpClient(Options.DefaultName);
 builder.Services.AddHttpRequests();
 
 var app = builder.Build();

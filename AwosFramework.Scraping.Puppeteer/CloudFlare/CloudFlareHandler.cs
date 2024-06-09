@@ -18,6 +18,7 @@ namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare
 			_detector=detector;
 			_solver=solver;
 			_data=data;
+			InnerHandler = new HttpClientHandler();
 		}
 
 		protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

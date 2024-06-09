@@ -1,6 +1,8 @@
 ﻿using AwosFramework.Scraping.Hosting;
 using AwosFramework.Scraping.Hosting.Middleware;
+using AwosFramework.Scraping.PuppeteerRequestor.CloudFlare;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,6 +21,16 @@ namespace AwosFramework.Scraping.PuppeteerRequestor
 
 			collection.AddSingleton<BrowserPool>();
 			collection.AddSingleton<PuppeteerRequestMiddlware>();
+			return collection;
+		}
+
+		public static IServiceCollection AddCloudFlareBypass(this IServiceCollection collection)
+		{
+			collection.AddSingleton<ICloudFlareDetector, CloudFlareDetector>();
+			collection.AddSingleton<ICloudFlareSolver, CloudFlareSolver>();
+			collection.AddSingleton<CloudFlareDataStore>();
+			collection.AddTransient<CloudFlareHandler>();
+			collection.AddHttpClient(Options.DefaultName).AddHttpMessageHandler<CloudFlareHandler>();
 			return collection;
 		}
 
