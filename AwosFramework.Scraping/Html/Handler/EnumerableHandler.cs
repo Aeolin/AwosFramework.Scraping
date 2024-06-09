@@ -17,7 +17,11 @@ namespace AwosFramework.Scraping.Html.Handler
 
 		public EnumerableHandler(IHtmlSelector selector, IHtmlSelector childSelector, Type type) : base(selector)
 		{
-			_componentType =  type.GetGenericArguments().First();
+			if (type.IsAssignableTo(typeof(IEnumerable)) && type.IsGenericType)
+				_componentType = type.GetGenericArguments().First();
+			else
+				throw new ArgumentException("Type must be an array or IEnumerable<T>");
+
 			childSelector ??= new SameNodeSelector(selector.Attribute);
 			_componentHandler = HandlerFactory.GetHandler(_componentType, childSelector);
 		}
@@ -29,7 +33,7 @@ namespace AwosFramework.Scraping.Html.Handler
 				return null;
 
 			var result = (IList)typeof(List<>).MakeGenericType(_componentType).GetConstructor(Array.Empty<Type>()).Invoke(null);
-			foreach(var node in  nodes)
+			foreach (var node in nodes)
 			{
 				var value = _componentHandler.Deserialize(node);
 				result.Add(value);

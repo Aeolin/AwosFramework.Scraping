@@ -6,6 +6,7 @@ using AwosFramework.Scraping.Middleware.Http;
 using AwosFramework.Scraping.ResultHandling.Json;
 using AwosFramework.Scraping.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -31,6 +32,7 @@ namespace AwosFramework.Scraping.Hosting
 			if (configure != null)
 				services.Configure(configure);
 
+			services.AddTransient(x => x.GetRequiredService<IOptions<HttpRequestMiddlewareConfiguration>>().Value);
 			services.AddSingleton<HttpRequestMiddleware>();
 			return services;
 		}

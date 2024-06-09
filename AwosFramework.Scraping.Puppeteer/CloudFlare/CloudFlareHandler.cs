@@ -15,14 +15,18 @@ namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare
 		public CloudFlareHandler(ICloudFlareClearanceProvider provider)
 		{
 			_clearanceProvider = provider;
-			InnerHandler = new HttpClientHandler();
+			//InnerHandler = new HttpClientHandler();
 		}
 
 		protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
 		{
 			var clearance = await _clearanceProvider.GetCloudFlareClearanceAsync(request.RequestUri);
 			clearance?.SetHeaders(request);
-			return await base.SendAsync(request, cancellationToken);
+			var result = await base.SendAsync(request, cancellationToken);
+			if (result.IsSuccessStatusCode == false)
+				_clearanceProvider.ReEvaluateClearance(result);
+
+			return result;
 		}
 	}
 }

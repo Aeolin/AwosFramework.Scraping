@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 namespace AwosFramework.Scraping.Hosting.Middleware
 {
 	public static class MiddlewareExtensions
-	{	
+	{
 		public static IScrapeApplicationBuilder UseMiddleware<T>(this IScrapeApplicationBuilder builder, Func<IServiceProvider, T> factory) where T : IMiddleware
 		{
 			builder.Middleware.AddMiddleware(factory);
@@ -69,7 +69,11 @@ namespace AwosFramework.Scraping.Hosting.Middleware
 			return builder;
 		}
 
-
+		public static IScrapeApplicationBuilder UseControllers(this IScrapeApplicationBuilder builder)
+		{
+			builder.UseUniqueMiddleware<ScrapeDataHandlerMiddleware>();
+			return builder;
+		}
 
 		public static IScrapeApplicationBuilder UseRouting(this IScrapeApplicationBuilder builder)
 		{
@@ -77,7 +81,7 @@ namespace AwosFramework.Scraping.Hosting.Middleware
 			return builder;
 		}
 
-		public static IScrapeApplicationBuilder UseDefaultRoute(this IScrapeApplicationBuilder builder, IScrapeRequestHandler scrapeRequestHandler)
+		public static IScrapeApplicationBuilder UseDefaultRoute(this IScrapeApplicationBuilder builder, IScrapeDataHandler scrapeRequestHandler)
 		{
 			builder.UseMiddleware(x => new DefaultRouteMiddleware(scrapeRequestHandler));
 			return builder;
@@ -125,7 +129,7 @@ namespace AwosFramework.Scraping.Hosting.Middleware
 		}
 
 		public static IScrapeApplicationBuilder UseHttpRequests(this IScrapeApplicationBuilder builder)
-		{	
+		{
 			builder.UseMiddleware(x => x.GetRequiredService<HttpRequestMiddleware>());
 			return builder;
 		}

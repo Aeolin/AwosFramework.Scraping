@@ -19,7 +19,7 @@ namespace AwosFramework.Scraping.Middleware.Routing
 		{
 			if (_routeMap.TryRoute(context.ScrapeJob.Uri, out var method, out var routeMatch))
 			{
-				context.AddComponent<IScrapeRequestHandler>(method);
+				context.AddComponent<IScrapeDataHandler>(method);
 				context.AddComponent(new RouteData(routeMatch.Data));
 
 				return Task.FromResult(true);

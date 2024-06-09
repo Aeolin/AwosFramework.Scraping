@@ -60,7 +60,7 @@ namespace AwosFramework.Scraping.Hosting
 			}
 		}
 
-		public async Task StartAsync(CancellationToken cancellationToken = default)
+		public async Task<bool> RunAsync(CancellationToken cancellationToken = default)
 		{
 			ulong scrapeCount = 0;
 			ulong successCount = 0;
@@ -72,10 +72,9 @@ namespace AwosFramework.Scraping.Hosting
 			var engine = Services.GetRequiredService<ScrapeEngine>();
 			var tasks = new Dictionary<Task<IScrapeResult>, IScrapeJob>();
 			StartTasks(jobs, tasks, engine);
-
 			watch.Start();
 			totalTime.Start();
-			while (jobs.Count > 0)
+			while (jobs.Count > 0 || tasks.Count > 0)
 			{
 				var completed = await Task.WhenAny(tasks.Keys);
 				totalTicks += watch.ElapsedTicks;
@@ -128,6 +127,7 @@ namespace AwosFramework.Scraping.Hosting
 			watch.Stop();
 
 			_logger.LogInformation("Done scraping, took {timespan}", totalTime.Elapsed);
+			return true;
 		}
 
 		public Task StopAsync(CancellationToken cancellationToken = default)
@@ -163,6 +163,12 @@ namespace AwosFramework.Scraping.Hosting
 		public void Dispose()
 		{
 			_scraper?.Dispose();
+		}
+
+		public async Task StartAsync(CancellationToken cancellationToken = default)
+		{
+			var res = await RunAsync(cancellationToken);
+			_logger.LogInformation("Done scraping");
 		}
 	}
 }

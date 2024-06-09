@@ -1,4 +1,5 @@
-﻿using HtmlAgilityPack;
+﻿using AwosFramework.Scraping.Html.PostProcessing;
+using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,9 +13,11 @@ namespace AwosFramework.Scraping.Html.XPath
 		public string XPath { get; init; }
 		public string Attribute { get; init; }
 		public DeserializationType DeserializationType { get; init; }
+		private IPostProcessor[] _postProcessors;
 
-		public XPathSelector(string xPath, string attribute = null, DeserializationType deserializationType = default)
+		public XPathSelector(string xPath, IPostProcessor[] postProcessors, string attribute = null, DeserializationType deserializationType = default)
 		{
+			_postProcessors = postProcessors;
 			XPath = xPath;
 			Attribute=attribute;
 			DeserializationType=deserializationType;
@@ -29,7 +32,13 @@ namespace AwosFramework.Scraping.Html.XPath
 			if (child == null)
 				return null;
 
-			return Attribute != null ? child.GetAttributeValue(Attribute, null) : child.InnerText;
+
+			var value = Attribute != null ? child.GetAttributeValue(Attribute, null) : child.InnerText;
+			if (_postProcessors !=null)
+				foreach (var postProcessor in _postProcessors)
+					value = postProcessor.PostProcess(value);
+
+			return value;
 		}
 	}
 }

@@ -3,6 +3,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,11 +24,21 @@ namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare
 			_solver = solver;
 		}
 
+		public void ReEvaluateClearance(HttpResponseMessage message)
+		{
+			var domain = message.RequestMessage.RequestUri.GetLeftPart(UriPartial.Authority);
+			if (message.Headers.Contains("Cf-Ray") && message.StatusCode == HttpStatusCode.Forbidden)
+			{
+				_nonCloudFlareDomains.Remove(domain);
+				_cfDomains.TryRemove(domain, out _);
+			}
+		}
+
 		private bool TryGetClerance(string domain, out CloudFlareClearance clearance)
 		{
-			if(_cfDomains.TryGetValue(domain, out clearance))
+			if (_cfDomains.TryGetValue(domain, out clearance))
 			{
-				if(clearance.Expiry < DateTime.Now)
+				if (clearance.Expiry < DateTime.Now)
 				{
 					_cfDomains.Remove(domain, out _);
 					_clearanceTasks.Remove(domain, out _);
@@ -53,8 +64,15 @@ namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare
 				return clearance;
 
 			if (_clearanceTasks.TryGetValue(domain, out var clearanceTask) == false)
+			{
 				if (_clearanceTasks.TryAdd(domain, SolveCloudFlare(uri)))
+				{
 					clearanceTask = _clearanceTasks[domain];
+					var result = await clearanceTask;
+					_clearanceTasks.TryRemove(domain, out _);
+					return result;
+				}
+			}
 
 			return await clearanceTask;
 		}

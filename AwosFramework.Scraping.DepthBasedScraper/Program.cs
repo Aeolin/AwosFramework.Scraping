@@ -25,6 +25,7 @@ var cfg = app.Services.GetRequiredService<DepthBasedScrapingConfig>();
 app.UseHttpRequests();
 app.UseDefaultContent();
 app.MapControllers();
+app.UseControllers();
 app.UseJsonResultHandler<ScrapedPage>(x => x.WithDirectory("./pages").WithBatchSize(1000));
 
 var jobs = await app.Services.GetInitialJobsAsync();

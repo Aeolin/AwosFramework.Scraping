@@ -17,17 +17,21 @@ namespace AwosFramework.Scraping.Html.Handler
 			{
 				return new HtmlNodeHandler(selector);
 			}
+			else if (Nullable.GetUnderlyingType(type)?.HasTryParseFunction() ?? false)
+			{
+				return new NullableHandler(selector, type);
+			}
 			else if (type.HasParseFunction())
 			{
 				return new ParseableHandler(selector, type);
 			}
-			else if (type.IsAssignableTo(typeof(IEnumerable)) || type.IsAssignableTo(typeof(IList)))
-			{
-				return new EnumerableHandler(selector, childSelector, type);
-			}
 			else if (type.IsArray)
 			{
 				return new ArrayHandler(selector, childSelector, type);
+			}
+			else if (type.IsAssignableTo(typeof(IEnumerable)) || type.IsAssignableTo(typeof(IList)))
+			{
+				return new EnumerableHandler(selector, childSelector, type);
 			}
 			else
 			{

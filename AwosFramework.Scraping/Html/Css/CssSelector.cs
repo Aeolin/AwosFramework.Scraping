@@ -1,4 +1,5 @@
-﻿using HtmlAgilityPack;
+﻿using AwosFramework.Scraping.Html.PostProcessing;
+using HtmlAgilityPack;
 using HtmlAgilityPack.CssSelectors.NetCore;
 using System;
 using System.Collections.Generic;
@@ -13,9 +14,12 @@ namespace AwosFramework.Scraping.Html.Css
 		public string Selector { get; init; }
 		public string Attribute { get; init; }
 		public DeserializationType DeserializationType { get; init; }
+		private IPostProcessor[] _postProcessors;
 
-		public CssSelector(string selector, string attribute = null, DeserializationType deserializationType = default)
+
+		public CssSelector(string selector, IPostProcessor[] postProcessors, string attribute = null, DeserializationType deserializationType = default)
 		{
+			_postProcessors = postProcessors;
 			Selector = selector;
 			Attribute=attribute;
 			DeserializationType=deserializationType;
@@ -30,7 +34,12 @@ namespace AwosFramework.Scraping.Html.Css
 			if (child == null)
 				return null;
 
-			return Attribute != null ? child.GetAttributeValue(Attribute, null) : child.InnerText;
+			var value = Attribute != null ? child.GetAttributeValue(Attribute, null) : child.InnerText;
+			if (_postProcessors !=null)
+				foreach (var postProcessor in _postProcessors)
+					value = postProcessor.PostProcess(value);
+
+			return value;
 		}
 	}
 }

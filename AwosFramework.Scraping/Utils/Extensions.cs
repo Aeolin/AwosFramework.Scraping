@@ -12,7 +12,10 @@ namespace AwosFramework.Scraping.Utils
 	public static class Extensions
 	{
 		private static readonly Type[] STRING_TYPE = [typeof(string)];
-	public static Func<string, object> GetParseFunction(this Type type)
+
+		public delegate bool TryParseDelegate(string @string, out object obj);
+
+		public static Func<string, object> GetParseFunction(this Type type)
 		{
 			if (type == typeof(string))
 				return (x) => x;
@@ -61,6 +64,52 @@ namespace AwosFramework.Scraping.Utils
 		{
 			return type == typeof(JsonDocument) || type == typeof(string) || type.GetMethod("Parse", BindingFlags.Static | BindingFlags.Public, STRING_TYPE) != null;
 		}
+
+		public static bool HasTryParseFunction(this Type type)
+		{
+			Type[] types = [typeof(string), type.MakeByRefType()];
+			return type.GetMethod("TryParse", BindingFlags.Static | BindingFlags.Public, types) != null;
+		}
+
+		public static TryParseDelegate CreateTryParseDelegate(this Type type)
+		{
+			Type[] types = [typeof(string), type.MakeByRefType()];
+			var method = type.GetMethod("TryParse", BindingFlags.Static | BindingFlags.Public, types);
+
+			var inputStringParam = Expression.Parameter(typeof(string), "input");
+			var outputObjectParam = Expression.Parameter(typeof(object).MakeByRefType(), "output");
+
+			// Create a variable to hold the strongly typed out parameter
+			var typedOutVariable = Expression.Variable(type, "typedOut");
+
+			// Create the call expression to the TryParse method
+			var tryParseCall = Expression.Call(
+					method,
+					inputStringParam,
+					typedOutVariable);
+
+			// Convert the out variable to object (boxing if necessary)
+			var assignToObject = Expression.Assign(
+					outputObjectParam,
+					Expression.Convert(typedOutVariable, typeof(object)));
+
+			// Create the body of the lambda expression
+			var body = Expression.Block(
+					new[] { typedOutVariable },
+					tryParseCall,
+					assignToObject,
+					tryParseCall // This returns the result of TryParse
+			);
+
+			// Compile the expression into a delegate
+			var lambda = Expression.Lambda<TryParseDelegate>(
+					body,
+					inputStringParam,
+					outputObjectParam);
+
+			return lambda.Compile();
+		}
+
 
 		private static Func<string, object> CreateParseDelegate(MethodInfo parseMethod)
 		{

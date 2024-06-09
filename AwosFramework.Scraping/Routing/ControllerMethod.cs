@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace AwosFramework.Scraping.Routing
 {
-	public class ControllerMethod : IScrapeRequestHandler
+	public class ControllerMethod : IScrapeDataHandler
 	{
 		private readonly RouteMatcher _matcher;
 		private readonly IBinder[] _binders;

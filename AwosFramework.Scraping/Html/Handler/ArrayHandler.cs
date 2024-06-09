@@ -18,7 +18,7 @@ namespace AwosFramework.Scraping.Html.Handler
 		{
 			_componentType = type.GetElementType();
 			childSelector ??= new SameNodeSelector(selector.Attribute);
-			_componentHandler = HandlerFactory.GetHandler(type, childSelector);
+			_componentHandler = HandlerFactory.GetHandler(_componentType, childSelector);
 		}
 
 		public override object Deserialize(HtmlNode root)

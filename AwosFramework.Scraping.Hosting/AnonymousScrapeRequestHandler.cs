@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace AwosFramework.Scraping.Hosting
 {
-	public class AnonymousScrapeRequestHandler : IScrapeRequestHandler
+	public class AnonymousScrapeRequestHandler : IScrapeDataHandler
 	{
 		private readonly Func<MiddlewareContext, Task<IScrapeResult>> _function;
 

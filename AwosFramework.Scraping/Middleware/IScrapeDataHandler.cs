@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AwosFramework.Scraping.Middleware
 {
-	public interface IScrapeRequestHandler
+	public interface IScrapeDataHandler
 	{
 		public Task<IScrapeResult> HandleAsync(MiddlewareContext context);
 	}

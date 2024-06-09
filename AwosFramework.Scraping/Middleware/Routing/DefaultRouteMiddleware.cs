@@ -9,19 +9,18 @@ namespace AwosFramework.Scraping.Middleware.Routing
 {
 	public class DefaultRouteMiddleware : IMiddleware
 	{
-		private readonly IScrapeRequestHandler _handler;
+		private readonly IScrapeDataHandler _handler;
 
-		public DefaultRouteMiddleware(IScrapeRequestHandler handler)
+		public DefaultRouteMiddleware(IScrapeDataHandler handler)
 		{
 			_handler=handler;
 		}
 
 		public async Task<bool> ExecuteAsync(MiddlewareContext context)
 		{
-			if(context.HasComponent<IScrapeResult>() == false)
+			if(context.HasComponent<IScrapeDataHandler>() == false)
 			{
-				var result = await _handler.HandleAsync(context);
-				context.AddComponent(result);
+				context.AddComponent(_handler);
 			}
 
 			return true;

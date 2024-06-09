@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace AwosFramework.Scraping.Middleware.Http
 {
@@ -31,7 +32,7 @@ namespace AwosFramework.Scraping.Middleware.Http
 			if (response.IsSuccessStatusCode)
 			{
 				context.AddComponent(response);
-				var queryData = job.Uri.Query.TrimStart('?').Split('&').Select(x => x.Split('=')).Where(x => x != null && x.Length == 2 && string.IsNullOrEmpty(x[0])).ToFrozenDictionary(x => x[0], x => x[1]);
+				var queryData = HttpUtility.UrlDecode(job.Uri.Query).TrimStart('?').Split('&').Select(x => x.Split('=')).Where(x => x != null && x.Length == 2 && string.IsNullOrEmpty(x[0]) == false).ToFrozenDictionary(x => x[0], x => x[1]);
 				context.AddComponent(new QueryData(queryData));
 
 				if (response.Content != null)
