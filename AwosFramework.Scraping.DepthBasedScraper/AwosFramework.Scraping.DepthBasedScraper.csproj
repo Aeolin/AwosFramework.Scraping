@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AwosFramework.Scraping.Hosting\AwosFramework.Scraping.Hosting.csproj" />
+    <ProjectReference Include="..\AwosFramework.Scraping.Puppeteer\AwosFramework.Scraping.PuppeteerRequestor.csproj" />
   </ItemGroup>
 
   <ItemGroup>

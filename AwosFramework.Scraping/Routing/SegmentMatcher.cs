@@ -20,7 +20,7 @@ namespace AwosFramework.Scraping.Routing
 		}
 
 		public static SegmentMatcher Any() => new SegmentMatcher(MatchKind.Any, null, null);
-		public static SegmentMatcher Keyed(string key) => new SegmentMatcher(MatchKind.Keyed, null, key.ToLower());
+		public static SegmentMatcher Keyed(string key) => new SegmentMatcher(MatchKind.Keyed, null, key);
 		public static SegmentMatcher Exact(string segement) => new SegmentMatcher(MatchKind.Exact, segement.ToLower(), null);
 
 		public bool TryMatch(string segment, out string value)

@@ -37,7 +37,6 @@ namespace AwosFramework.Scraping.Hosting
 			Services.AddSingleton<MiddlewareCollectionFactory>();
 			Services.AddSingleton<ResultHandlerCollectionFactory>();
 			Services.AddSingleton<RouteMapFactory>();
-			Services.AddTransient<ScrapeApplication>();
 			Services.AddScoped<MiddlewareCollection>(x => x.GetRequiredService<MiddlewareCollectionFactory>().Create(x));
 			Services.AddScoped<ResultHandlerCollection>(x => x.GetRequiredService<ResultHandlerCollectionFactory>().Create(x));
 			Services.AddSingleton(x => x.GetRequiredService<RouteMapFactory>().Create(x));
@@ -65,7 +64,7 @@ namespace AwosFramework.Scraping.Hosting
 		public ScrapeApplication Build()
 		{
 			var provider = Services.BuildServiceProvider();
-			return provider.GetRequiredService<ScrapeApplication>();
+			return ActivatorUtilities.CreateInstance<ScrapeApplication>(provider, provider);
 		}
 	}
 }

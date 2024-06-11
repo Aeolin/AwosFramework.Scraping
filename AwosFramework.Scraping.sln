@@ -15,15 +15,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{13
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AwosFramework.Scraping.DepthBasedScraper", "AwosFramework.Scraping.DepthBasedScraper\AwosFramework.Scraping.DepthBasedScraper.csproj", "{3BBC3FC6-8E2D-459B-A2D2-86231964D1C8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AwosFramework.Scraping.PuppeteerRequestor", "AwosFramework.Scraping.Puppeteer\AwosFramework.Scraping.PuppeteerRequestor.csproj", "{EF307BBC-7BBF-4CE1-9173-C95F137A3C4B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AwosFramework.Scraping.PuppeteerRequestor", "AwosFramework.Scraping.Puppeteer\AwosFramework.Scraping.PuppeteerRequestor.csproj", "{EF307BBC-7BBF-4CE1-9173-C95F137A3C4B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AwosFramework.Scraping.Playground", "AwosFramework.Scraping.Playground\AwosFramework.Scraping.Playground.csproj", "{6717FD7C-45D3-41CF-B3A5-D458E0AF55A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AwosFramework.Scraping.Playground", "AwosFramework.Scraping.Playground\AwosFramework.Scraping.Playground.csproj", "{6717FD7C-45D3-41CF-B3A5-D458E0AF55A1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PuppeteerExtraSharp", "AwosFramework.Scraping.Puppeteer\libs\Puppeteer-sharp-extra\PuppeteerExtraSharp\PuppeteerExtraSharp.csproj", "{B7850816-4E89-4810-8E6C-BFB403152BDC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{BC770BBC-C7AE-4157-A0DE-850CE1294960}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AwosFramework.Scraping.AO3", "AwosFramework.Scraping.AO3\AwosFramework.Scraping.AO3.csproj", "{DF0E68EF-1B83-4ED7-9F92-A53550FEDAE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AwosFramework.Scraping.AO3", "AwosFramework.Scraping.AO3\AwosFramework.Scraping.AO3.csproj", "{DF0E68EF-1B83-4ED7-9F92-A53550FEDAE4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

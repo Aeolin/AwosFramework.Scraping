@@ -31,5 +31,5 @@ app.UseJsonResultHandler<WorkMeta>(x => x.WithDirectory("./results").WithBatchSi
 var job = HttpJob.Get("https://archiveofourown.org/works/search?work_search[sort_column]=created_at&work_search[sort_direction]=asc&commit=Search");
 app.AddInitialJobs(job);
 
-var result = await app.RunAsync();
+await app.StartAsync();
 app.Dispose();

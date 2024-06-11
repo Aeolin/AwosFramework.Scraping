@@ -18,8 +18,16 @@ namespace AwosFramework.Scraping.Routing
 			{
 				var hostOffset = path.IndexOf("://") + 3;
 				var firstSegment = path.IndexOf("/", hostOffset);
-				Host = path.Substring(0, firstSegment);
-				Path = path.Substring(firstSegment + 1);
+				if (firstSegment == -1)
+				{
+					Host = path;
+					Path = null;
+				}
+				else
+				{
+					Host = path.Substring(0, firstSegment);
+					Path = path.Substring(firstSegment + 1);
+				}
 			}
 			else
 			{

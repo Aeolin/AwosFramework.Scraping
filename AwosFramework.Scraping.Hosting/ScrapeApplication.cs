@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -31,18 +32,20 @@ namespace AwosFramework.Scraping.Hosting
 			return builder;
 		}
 
-		public IServiceProvider Services { get; init; }
+
 		public MiddlewareCollectionFactory Middleware { get; init; }
 		public ResultHandlerCollectionFactory ResultHandlers { get; init; }
 		private static Scraper _scraper;
 		private readonly List<IScrapeJob> _initialJobs = new List<IScrapeJob>();
 		private ILogger _logger;
 		private readonly ScraperConfiguration _config;
+		public IServiceProvider Services => _services;
 
+		private ServiceProvider _services;
 
-		public ScrapeApplication(IServiceProvider provider, MiddlewareCollectionFactory middlewareBuilder, ResultHandlerCollectionFactory resultHandlers)
+		public ScrapeApplication(ServiceProvider provider, MiddlewareCollectionFactory middlewareBuilder, ResultHandlerCollectionFactory resultHandlers)
 		{
-			Services = provider;
+			_services = provider;
 			Middleware = middlewareBuilder;
 			ResultHandlers = resultHandlers;
 			_scraper = Services.GetRequiredService<Scraper>();
@@ -60,7 +63,7 @@ namespace AwosFramework.Scraping.Hosting
 			}
 		}
 
-		public async Task<bool> RunAsync(CancellationToken cancellationToken = default)
+		protected async Task<bool> RunAsync(CancellationToken cancellationToken = default)
 		{
 			ulong scrapeCount = 0;
 			ulong successCount = 0;
@@ -163,6 +166,7 @@ namespace AwosFramework.Scraping.Hosting
 		public void Dispose()
 		{
 			_scraper?.Dispose();
+			_services.Dispose();
 		}
 
 		public async Task StartAsync(CancellationToken cancellationToken = default)

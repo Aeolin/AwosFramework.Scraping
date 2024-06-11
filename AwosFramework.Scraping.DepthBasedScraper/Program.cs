@@ -9,13 +9,14 @@ using AwosFramework.Scraping.Hosting.ResultHandlers;
 using AwosFramework.Scraping.Hosting;
 using Microsoft.Extensions.Options;
 using System.Net.Http;
+using AwosFramework.Scraping.PuppeteerRequestor;
 
 var builder = ScrapeApplication.CreateBuilder(args);
 builder.Services.AddBinderFactory(x => x.AddInbuiltBinders());
 builder.Services.AddOptions<DepthBasedScrapingConfig>();	
 builder.Services.Configure<DepthBasedScrapingConfig>(builder.Configuration.GetSection("ScrapeSettings"));
 builder.Services.AddTransient(x => x.GetRequiredService<IOptions<DepthBasedScrapingConfig>>().Value);
-builder.Services.AddHttpClient(Options.DefaultName);
+builder.Services.AddHttpClient();
 builder.Services.AddHttpRequests();
 
 var app = builder.Build();

@@ -16,23 +16,30 @@ namespace AwosFramework.Scraping.Routing
 		public RouteMatcher(string host, string route)
 		{
 			_host = host;
-			var segments = route.Split('/');
-			_matchers = new SegmentMatcher[segments.Length];
-			for (int i = 0; i < segments.Length; i++)
+			if (string.IsNullOrEmpty(route))
 			{
-				var segment = segments[i];
-				if (segment == "*")
+				_matchers = Array.Empty<SegmentMatcher>();
+			}
+			else
+			{
+				var segments = route.TrimStart('/').Split('/');
+				_matchers = new SegmentMatcher[segments.Length];
+				for (int i = 0; i < segments.Length; i++)
 				{
-					_matchers[i] = SegmentMatcher.Any();
-				}
-				else if (segment.StartsWith("{") && segment.EndsWith("}"))
-				{
-					var key = segment[1..^1];
-					_matchers[i] = SegmentMatcher.Keyed(key);
-				}
-				else
-				{
-					_matchers[i] = SegmentMatcher.Exact(segment);
+					var segment = segments[i];
+					if (segment == "*")
+					{
+						_matchers[i] = SegmentMatcher.Any();
+					}
+					else if (segment.StartsWith("{") && segment.EndsWith("}"))
+					{
+						var key = segment[1..^1];
+						_matchers[i] = SegmentMatcher.Keyed(key);
+					}
+					else
+					{
+						_matchers[i] = SegmentMatcher.Exact(segment);
+					}
 				}
 			}
 
