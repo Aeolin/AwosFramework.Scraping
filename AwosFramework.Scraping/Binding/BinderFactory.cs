@@ -34,7 +34,7 @@ namespace AwosFramework.Scraping.Binding
 				if (generator.TryCreateBinder(parameter, matcher, defaultValue, out var binder))
 					return binder;
 
-			var key = parameter.Name.ToLower();
+			var key = parameter.Name;
 			if (matcher.RouteKeywords.Contains(key) == false)
 				throw new InvalidOperationException($"Route parameter {key} not found in route");
 

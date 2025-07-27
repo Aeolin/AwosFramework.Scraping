@@ -9,13 +9,14 @@ using System.Threading.Tasks;
 
 namespace AwosFramework.Scraping.Hosting.ResultHandlers;
 
-public class JsonResultHandlerBuilder<T>
+public partial class JsonResultHandlerBuilder<T>
 {
-	private Func<T, bool> _filter;
+	private Predicate<T> _filter;
 	private string _directory;
 	private string _fileNameTemplate;
 	private int _batchSize;
 	private JsonSerializerOptions _options;
+	private readonly List<JsonResultHandlerCategoryBuilder> _categories = new();
 
 	public JsonResultHandlerBuilder<T> FromConfig(IConfiguration config)
 	{
@@ -25,12 +26,20 @@ public class JsonResultHandlerBuilder<T>
 		return this;
 	}
 
-	public JsonResultHandlerBuilder<T> WithFilter(Func<T, bool> filter)
+	public JsonResultHandlerBuilder<T> WithFilter(Predicate<T> filter)
 	{
 		_filter = filter;
 		return this;
 	}
 
+	public JsonResultHandlerBuilder<T> WithCategory(string name, Predicate<T> filter, Action<JsonResultHandlerCategoryBuilder> catBuilder = null)
+	{
+		var categoryBuilder = new JsonResultHandlerCategoryBuilder(this, name, filter);
+		catBuilder?.Invoke(categoryBuilder);
+		_categories.Add(categoryBuilder);
+		return this;
+	}
+ 
 	public JsonResultHandlerBuilder<T> WithDirectory(string directory)
 	{
 		_directory = directory;
@@ -57,6 +66,10 @@ public class JsonResultHandlerBuilder<T>
 
 	public JsonResultHandler<T> Build()
 	{
-		return new JsonResultHandler<T>(_directory, _batchSize, _fileNameTemplate, _filter, _options);
+		if (_categories.Count == 0)
+			WithCategory("Default", _filter);
+
+		var categories = _categories.Select(x => x.Build());
+		return new JsonResultHandler<T>(categories, _filter);
 	}
 }

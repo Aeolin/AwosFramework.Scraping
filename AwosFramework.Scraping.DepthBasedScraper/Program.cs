@@ -17,7 +17,7 @@ builder.Services.AddOptions<DepthBasedScrapingConfig>();
 builder.Services.Configure<DepthBasedScrapingConfig>(builder.Configuration.GetSection("ScrapeSettings"));
 builder.Services.AddTransient(x => x.GetRequiredService<IOptions<DepthBasedScrapingConfig>>().Value);
 builder.Services.AddHttpClient();
-builder.Services.AddHttpRequests();
+builder.Services.AddHttpRequestMiddleware();
 
 var app = builder.Build();
 var cfg = app.Services.GetRequiredService<DepthBasedScrapingConfig>();

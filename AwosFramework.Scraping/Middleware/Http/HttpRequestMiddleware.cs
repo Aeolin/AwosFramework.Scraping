@@ -1,9 +1,11 @@
 ﻿using AwosFramework.Scraping.Core;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -13,10 +15,12 @@ namespace AwosFramework.Scraping.Middleware.Http
 	public class HttpRequestMiddleware : IMiddleware
 	{
 		private readonly HttpRequestMiddlewareConfiguration _config;
+		private readonly ILogger _logger;
 
-		public HttpRequestMiddleware(HttpRequestMiddlewareConfiguration config)
+		public HttpRequestMiddleware(HttpRequestMiddlewareConfiguration config, ILoggerFactory loggerFactory)
 		{
 			_config=config;
+			_logger = loggerFactory.CreateLogger<HttpRequestMiddleware>();
 		}
 
 		public async Task<bool> ExecuteAsync(MiddlewareContext context)
@@ -46,6 +50,17 @@ namespace AwosFramework.Scraping.Middleware.Http
 			}
 			else
 			{
+				if(_config.WaitOnRateLimit && response.StatusCode == HttpStatusCode.TooManyRequests && response.Headers.TryGetValues("x-ratelimit-reset", out var timeouts) && int.TryParse(timeouts.First(), out var timeoutSeconds))
+				{
+					timeoutSeconds = Math.Min(timeoutSeconds, _config.MaxRateLimitWaitSeconds);
+					_logger.LogError("Hit ratelimit, waiting for {Timeout}s", timeoutSeconds);
+					await Task.Delay(TimeSpan.FromSeconds(timeoutSeconds));
+				}
+				else
+				{
+					_logger.LogError("Error during HTTP Request to {Url} status code: {StatusCode}, reason: {ReasonPhrase}", job.Request.RequestUri, response.StatusCode, response.ReasonPhrase);
+				}
+
 				return !_config.CancelMiddlewareOnHttpError;
 			}
 		}

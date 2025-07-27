@@ -23,7 +23,7 @@ namespace AwosFramework.Scraping.Hosting
 			return services;
 		}
 
-		public static IServiceCollection AddHttpRequests(this IServiceCollection services, Action<HttpRequestMiddlewareConfiguration> configure = null)
+		public static IServiceCollection AddHttpRequestMiddleware(this IServiceCollection services, Action<HttpRequestMiddlewareConfiguration> configure = null)
 		{
 			if(services.Any(x => x.ServiceType == typeof(HttpClient)) == false)
 				services.AddScoped(x => new HttpClient());

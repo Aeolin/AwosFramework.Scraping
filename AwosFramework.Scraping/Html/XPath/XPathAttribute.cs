@@ -14,7 +14,9 @@ namespace AwosFramework.Scraping.Html.XPath
 		public DeserializationType DeserializationType { get; init; }
 
 
-		public XPathAttribute(string xPath)
+
+
+		public XPathAttribute(string xPath = ".")
 		{
 			XPath = xPath;
 		}

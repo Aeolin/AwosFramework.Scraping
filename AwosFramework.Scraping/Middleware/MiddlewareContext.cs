@@ -1,4 +1,5 @@
 ﻿using AwosFramework.Scraping.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -11,16 +12,17 @@ namespace AwosFramework.Scraping.Middleware
 	public class MiddlewareContext : IDisposable
 	{
 		public IScrapeJob ScrapeJob { get; init; }
-		public IServiceProvider ServiceProvider { get; init; }
+		public IServiceProvider ServiceProvider => _scope.ServiceProvider;
 		public ILogger Logger { get; init; }
 		public bool RequestHandeled { get; private set; } = false;
 		private readonly Dictionary<(Type, object), object> _components = new Dictionary<(Type, object), object>();
+		private readonly IServiceScope _scope;
 
 
 		public MiddlewareContext(IScrapeJob scrapeJob, IServiceProvider provider, ILogger logger)
 		{
 			ScrapeJob=scrapeJob;
-			ServiceProvider=provider;
+			_scope=provider.CreateScope();
 			Logger = logger;
 		}
 
@@ -67,6 +69,7 @@ namespace AwosFramework.Scraping.Middleware
 
 		public void Dispose()
 		{
+			_scope.Dispose();
 			foreach (var disposable in _components.Values.OfType<IDisposable>())
 				disposable.Dispose();
 		}

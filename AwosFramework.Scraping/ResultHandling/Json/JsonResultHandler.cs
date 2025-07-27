@@ -1,4 +1,5 @@
 ﻿using AwosFramework.Scraping.ResultHandling;
+using AwosFramework.Scraping.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -12,35 +13,26 @@ namespace AwosFramework.Scraping.ResultHandling.Json
 {
 	public class JsonResultHandler<T> : IResultHandler
 	{
-		public string Directory { get; init; }
-		public int BatchSize { get; init; }
-		public int BatchCount { get; private set; }
-		public string FileName { get; private set; }
+		public JsonResultCategory<T>[] Categories { get; init; }
 		public JsonSerializerOptions SerializerOptions { get; init; }
 
-		private ConcurrentBag<T> _bag = new ConcurrentBag<T>();
-		private Func<T, bool> _filter;
-		private SemaphoreSlim _saveSemaphore;
+		private Predicate<T>? _filter;
+		private readonly SemaphoreSlim _saveSemaphore = new(1);
 
-		public JsonResultHandler(string directory, int batchSize, string fileName = null, Func<T, bool> filter = null, JsonSerializerOptions serializerOptions = null)
+		public JsonResultHandler(IEnumerable<JsonResultCategory<T>> categories, Predicate<T>? filter = null) 
 		{
-			Directory = directory;
-			System.IO.Directory.CreateDirectory(Directory);
-			BatchSize = batchSize;
-			FileName = fileName ?? $"{typeof(T).Name.ToLower()}_batch_{{0}}.json";
-			SerializerOptions = serializerOptions ?? JsonSerializerOptions.Default;
-			_filter = filter;
-			_saveSemaphore = new SemaphoreSlim(1);
+			this.Categories = categories.ToArray();
+			this._filter = filter;
 		}
-
+		
 		public async Task SaveAsync(bool respectBatchSize = false)
 		{
-			if ((respectBatchSize == false || _bag.Count >= BatchSize) && _bag.Count > 0)
-			{
-				var data = Interlocked.Exchange(ref _bag, new ConcurrentBag<T>());
-				using var file = File.Create(Path.Combine(Directory, string.Format(FileName, BatchCount++, BatchSize)));
-				await JsonSerializer.SerializeAsync(file, data, SerializerOptions);
-			}
+			if (_saveSemaphore.CurrentCount == 0)
+				return; // ignore save calls while already saving
+
+			await _saveSemaphore.WaitAsync();
+			await Task.WhenAll(Categories.Select(x => x.SaveAsync(respectBatchSize)));
+			_saveSemaphore.Release();
 		}
 
 		public async Task HandleAsync(object data)
@@ -48,9 +40,9 @@ namespace AwosFramework.Scraping.ResultHandling.Json
 			if (data is not T tData || (_filter != null && _filter(tData) == false))
 				return;
 
-			_bag.Add(tData);
-			if (_bag.Count >= BatchSize)
-				await SaveAsync(true);
+			var category = Categories.FirstOrDefault(x => x.Matches(tData));
+			if(category != null)
+				await category.HandleAsync(tData);	
 		}
 
 		public Task SaveAsync() => SaveAsync(false);

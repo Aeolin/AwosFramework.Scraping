@@ -22,7 +22,7 @@ namespace AwosFramework.Scraping.Routing
 			}
 			else
 			{
-				var segments = route.TrimStart('/').Split('/');
+				var segments = route.TrimEnd('/').TrimStart('/').Split('/');
 				_matchers = new SegmentMatcher[segments.Length];
 				for (int i = 0; i < segments.Length; i++)
 				{

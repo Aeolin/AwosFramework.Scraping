@@ -17,7 +17,7 @@ builder.Services.Configure<ScraperConfiguration>(x =>
 
 builder.Services.AddBinderFactory(x => x.AddInbuiltBinders());
 builder.Services.AddCloudFlareBypass();
-builder.Services.AddHttpRequests();
+builder.Services.AddHttpRequestMiddleware();
 
 var app = builder.Build();
 

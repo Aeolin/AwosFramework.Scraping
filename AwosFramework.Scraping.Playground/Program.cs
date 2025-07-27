@@ -1,7 +1,13 @@
 ﻿
 using AwosFramework.Scraping.PuppeteerRequestor.CloudFlare;
+using AwosFramework.Scraping.ResultHandling.Json;
+using AwosFramework.Scraping.Utils;
 using Microsoft.Extensions.Logging;
 using System.Net;
+
+var batchData = new BatchData<string>("Test", 2, 100, "data");
+var template = TemplateBuilder.BuildTemplate<BatchData<string>>("{Category}_batch_{BatchNumber:0000}.json");
+Console.WriteLine(template(batchData));
 
 var factory = LoggerFactory.Create(x =>
 {

@@ -25,6 +25,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AwosFramework.Scraping.AO3", "AwosFramework.Scraping.AO3\AwosFramework.Scraping.AO3.csproj", "{DF0E68EF-1B83-4ED7-9F92-A53550FEDAE4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AwosFramework.Scraping.Reddit", "AwosFramework.Scraping.Reddit\AwosFramework.Scraping.Reddit.csproj", "{2ADFBFD8-9D1C-4131-A01C-779C80E90B05}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{DF0E68EF-1B83-4ED7-9F92-A53550FEDAE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF0E68EF-1B83-4ED7-9F92-A53550FEDAE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF0E68EF-1B83-4ED7-9F92-A53550FEDAE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2ADFBFD8-9D1C-4131-A01C-779C80E90B05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2ADFBFD8-9D1C-4131-A01C-779C80E90B05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2ADFBFD8-9D1C-4131-A01C-779C80E90B05}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2ADFBFD8-9D1C-4131-A01C-779C80E90B05}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -77,6 +83,7 @@ Global
 		{6717FD7C-45D3-41CF-B3A5-D458E0AF55A1} = {137F8A6B-829A-48D8-81FB-0D171F92A28C}
 		{B7850816-4E89-4810-8E6C-BFB403152BDC} = {BC770BBC-C7AE-4157-A0DE-850CE1294960}
 		{DF0E68EF-1B83-4ED7-9F92-A53550FEDAE4} = {137F8A6B-829A-48D8-81FB-0D171F92A28C}
+		{2ADFBFD8-9D1C-4131-A01C-779C80E90B05} = {137F8A6B-829A-48D8-81FB-0D171F92A28C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A007EE9D-CF53-4BF3-9FA4-68D36035F602}
