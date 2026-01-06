@@ -15,6 +15,9 @@ namespace AwosFramework.Scraping.Playground
 {
 	public class WorldHealthExpoScraper : ScrapeController
 	{
+		private const string EXHIBITIONER_DETAIL_HANDLER = "EXHIBITIONER_DETAIL_HANDLER";
+		private const string EXHIBITIONER_MEMBER_LIST_HANDLER = "EXHIBITIONER_MEMBER_LIST_HANDLER";
+
 		[Route("https://connections.whxevents.com/api/graphql")]
 		public IScrapeResult HandleExhibitorList([FromBody(DeserializationType = DeserializationType.Json)] JsonDocument exhibitorView)
 		{
@@ -24,11 +27,23 @@ namespace AwosFramework.Scraping.Playground
 			if (exhibitors.TryGetProperty("pageInfo", out var pageJson) && pageJson.GetProperty("hasNextPage").GetBoolean() && pageJson.TryGetProperty("endCursor", out var endCursorElement))
 				endCursor = endCursorElement.GetString();
 
-			var jobs = exhibitors.GetProperty("nodes").EnumerateArray().Select(x => HttpJob.Get($"https://connections.whxevents.com/widget/event/whx-dubai-2026/exhibitor/{x.GetProperty("id").GetString()}", 1)).ToList();
+			var jobs = exhibitors.GetProperty("nodes").EnumerateArray().Select(x => HttpJob.Get(ApiHelper.GetExhibitorDetailRequest(x.GetProperty("id").GetString()!), 1, handlerName: EXHIBITIONER_DETAIL_HANDLER)).ToList();
 			if (string.IsNullOrEmpty(endCursor) == false)
 				jobs?.Add(HttpJob.Get(ApiHelper.GetExhibitorPageRequest(endCursor), 2));
 
 			return Follow(jobs);
+		}
+
+		[HandlerName(EXHIBITIONER_DETAIL_HANDLER)]
+		public IScrapeJob HandleExhibitioner([FromBody]JsonDocument detailData)
+		{
+			var
+		}
+
+		[HandlerName(EXHIBITIONER_MEMBER_LIST_HANDLER)]
+		public IScrapeJob HandleExhibitionerMembers([FromBody]JsonDocument members, [FromJob]ExhibitorInfo info)
+		{
+			
 		}
 
 		[Route("https://connections.whxevents.com/widget/event/whx-dubai-2026/exhibitor/{exhibitorId}")]

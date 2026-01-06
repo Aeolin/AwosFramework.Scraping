@@ -106,7 +106,7 @@ namespace AwosFramework.Scraping.Hosting.Middleware
 
 			var methods = controllers
 					.SelectMany(x => x.GetMethods())
-					.Where(x => x.GetCustomAttribute<RouteAttribute>() != null)
+					.Where(x => x.GetCustomAttribute<RouteAttribute>() != null || x.GetCustomAttribute<HandlerNameAttribute>() != null)
 					.ToArray();
 
 			foreach (var method in methods)

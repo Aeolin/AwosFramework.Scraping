@@ -17,6 +17,7 @@ namespace AwosFramework.Scraping.Routing
 {
 	public class ControllerMethod : IScrapeDataHandler
 	{
+		private readonly string? _handlerName;
 		private readonly RouteMatcher _matcher;
 		private readonly IBinder[] _binders;
 		private readonly MethodInfo _method;
@@ -24,12 +25,18 @@ namespace AwosFramework.Scraping.Routing
 
 		public Type ControllerType { get; init; }
 		public string Name { get; init; }
+		public string HandlerName => _handlerName;
 
 		public ControllerMethod(MethodInfo methodInfo, IBinderFactory binderFactory)
 		{
 			var attr = methodInfo.GetCustomAttribute<RouteAttribute>();
 			if (attr != null)
 				_matcher = new RouteMatcher(attr.Host, attr.Path);
+
+			var handlerAttr = methodInfo.GetCustomAttribute<HandlerNameAttribute>();
+			if(handlerAttr != null)
+				_handlerName = handlerAttr.HandlerName;
+
 			else if(methodInfo.GetCustomAttribute<DefaultRouteAttribute>() == null)
 				throw new ArgumentException($"Method must either have a {nameof(RouteAttribute)} or {nameof(DefaultRouteAttribute)}", nameof(methodInfo));
 			
@@ -38,6 +45,14 @@ namespace AwosFramework.Scraping.Routing
 			_isTask = methodInfo.ReturnType.IsAssignableTo(typeof(Task<IScrapeResult>));
 			ControllerType = methodInfo.DeclaringType;
 			Name = methodInfo.Name;
+		}
+
+		public bool MatchesHandlerName(string handlerName)
+		{
+			if (string.IsNullOrEmpty(_handlerName))
+				return false;
+			
+			return string.Equals(_handlerName, handlerName, StringComparison.OrdinalIgnoreCase);
 		}
 
 		public RouteMatchResult MatchResult(string route)

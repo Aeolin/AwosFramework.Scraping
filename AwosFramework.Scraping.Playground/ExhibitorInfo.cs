@@ -9,9 +9,13 @@ namespace AwosFramework.Scraping.Playground
 {
 	public class ExhibitorInfo
 	{
+		[JsonPropertyName("id")]
 		public string? Id { get; init; }
+
+		[JsonPropertyName("type")]
 		public string? Type { get; init; }
 		public string? Name { get; init; }
+		public string? Email { get; init; }
 		public string? Website { get; init; }
 		public string? Description { get; init; }
 		public string? Country { get; init; }
@@ -20,5 +24,6 @@ namespace AwosFramework.Scraping.Playground
 		public string[] MedicalEquipment { get; init; }
 		public string[] ConnectWith { get; set; }
 		public string[] NatureOfBusiness { get; set; }
+		public List<ExhibitionerMember> Members { get; set; }
 	}
 }

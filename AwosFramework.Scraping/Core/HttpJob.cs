@@ -21,7 +21,7 @@ namespace AwosFramework.Scraping.Core
 		public HttpRequestMessage Request { get; private set; }
 		public int Priority { get; init; }
 		public bool AllowPartialResult { get; init; }
-
+		public string HandlerName { get; init; }
 
 		public HttpJob Parent { get; init; }
 		public IScrapeResult Result { get; set; }
@@ -67,9 +67,9 @@ namespace AwosFramework.Scraping.Core
 			return new HttpJob(url, priority, null, data, null, partialResult);
 		}
 
-		public static HttpJob Get(HttpRequestMessage request, int priority = 0, object data = null, bool partialResult = false)
+		public static HttpJob Get(HttpRequestMessage request, int priority = 0, object data = null, bool partialResult = false, string handlerName = null)
 		{
-			return new HttpJob(request.RequestUri, priority, null, data, request, partialResult);
+			return new HttpJob(request.RequestUri, priority, null, data, request, partialResult, handlerName);
 		}
 
 		public HttpJob(string uri, int priority = 0, HttpJob parent = null, object data = null, HttpRequestMessage request = null, bool partialResult = false) : this(new Uri(uri), priority, parent, data, request, partialResult)
@@ -77,7 +77,7 @@ namespace AwosFramework.Scraping.Core
 			
 		}
 
-		public HttpJob(Uri uri, int priority = 0, HttpJob parent = null, object data = null, HttpRequestMessage request = null, bool partialResult = false)
+		public HttpJob(Uri uri, int priority = 0, HttpJob parent = null, object data = null, HttpRequestMessage request = null, bool partialResult = false, string handlerName = null)
 		{
 			RetryCount = 0;
 			Id = Guid.NewGuid();
@@ -87,6 +87,7 @@ namespace AwosFramework.Scraping.Core
 			Priority = priority;
 			Request=request ?? (uri == null ? null : new HttpRequestMessage(HttpMethod.Get, uri));
 			AllowPartialResult = partialResult;
+			HandlerName = handlerName;
 		}
 	}
 }

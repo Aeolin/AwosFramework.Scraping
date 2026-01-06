@@ -17,7 +17,15 @@ namespace AwosFramework.Scraping.Middleware.Routing
 
 		public Task<bool> ExecuteAsync(MiddlewareContext context)
 		{
-			if (_routeMap.TryRoute(context.ScrapeJob.Uri, out var method, out var routeMatch))
+			if (context.ScrapeJob.HandlerName != null)
+			{
+				if (_routeMap.TryGetNamedHandler(context.ScrapeJob.HandlerName, out var method) == false)
+					return Task.FromResult(false);
+
+				context.AddComponent<IScrapeDataHandler>(method);
+				return Task.FromResult(true);
+			}
+			else if (_routeMap.TryRoute(context.ScrapeJob.Uri, out var method, out var routeMatch))
 			{
 				context.AddComponent<IScrapeDataHandler>(method);
 				context.AddComponent(new RouteData(routeMatch.Data));

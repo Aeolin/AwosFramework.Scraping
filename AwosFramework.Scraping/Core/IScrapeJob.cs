@@ -11,5 +11,6 @@ namespace AwosFramework.Scraping.Core
 		bool AllowPartialResult { get; }
 		public object Data { get; }
 		public bool Retry(int maxRetries);
+		public string? HandlerName { get; }
 	}
 }
