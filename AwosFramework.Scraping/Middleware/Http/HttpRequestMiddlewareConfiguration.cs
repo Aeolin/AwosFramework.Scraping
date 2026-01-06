@@ -12,6 +12,7 @@ namespace AwosFramework.Scraping.Middleware.Http
 		public bool CancelMiddlewareOnFilterMismatch { get; set; } = false;
 		public bool CancelMiddlewareOnHttpError { get; set; } = true;
 		public bool WaitOnRateLimit { get; set; } = true;
+		public int DefaultRateLimitWaitSeconds { get; set; } = 60;
 		public int MaxRateLimitWaitSeconds { get; set; } = 120;
 	}
 }

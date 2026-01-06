@@ -30,16 +30,20 @@ namespace AwosFramework.Scraping.Routing
 		public ControllerMethod(MethodInfo methodInfo, IBinderFactory binderFactory)
 		{
 			var attr = methodInfo.GetCustomAttribute<RouteAttribute>();
-			if (attr != null)
-				_matcher = new RouteMatcher(attr.Host, attr.Path);
-
 			var handlerAttr = methodInfo.GetCustomAttribute<HandlerNameAttribute>();
-			if(handlerAttr != null)
+			if (attr != null)
+			{
+				_matcher = new RouteMatcher(attr.Host, attr.Path);
+			}
+			else if (handlerAttr != null)
+			{
 				_handlerName = handlerAttr.HandlerName;
-
-			else if(methodInfo.GetCustomAttribute<DefaultRouteAttribute>() == null)
+			}
+			else if (methodInfo.GetCustomAttribute<DefaultRouteAttribute>() == null)
+			{
 				throw new ArgumentException($"Method must either have a {nameof(RouteAttribute)} or {nameof(DefaultRouteAttribute)}", nameof(methodInfo));
-			
+			}
+
 			_binders = methodInfo.GetParameters().Select(p => binderFactory.CreateBinder(p, _matcher, p.HasDefaultValue ? p.DefaultValue : null)).ToArray();
 			_method = methodInfo;
 			_isTask = methodInfo.ReturnType.IsAssignableTo(typeof(Task<IScrapeResult>));
@@ -51,7 +55,7 @@ namespace AwosFramework.Scraping.Routing
 		{
 			if (string.IsNullOrEmpty(_handlerName))
 				return false;
-			
+
 			return string.Equals(_handlerName, handlerName, StringComparison.OrdinalIgnoreCase);
 		}
 
@@ -74,7 +78,7 @@ namespace AwosFramework.Scraping.Routing
 
 			var result = _method.Invoke(controller, objects);
 			if (_isTask)
-				return await(Task<IScrapeResult>)result;
+				return await (Task<IScrapeResult>)result;
 			else
 				return (IScrapeResult)result;
 		}

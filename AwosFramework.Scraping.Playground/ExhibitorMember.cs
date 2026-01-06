@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace AwosFramework.Scraping.Playground
 {
-	public class ExhibitionerMember
+	public class ExhibitorMember
 	{
 		[JsonPropertyName("id")]
 		public string Id { get; set; }

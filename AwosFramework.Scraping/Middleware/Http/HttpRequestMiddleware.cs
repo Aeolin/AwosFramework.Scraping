@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Frozen;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace AwosFramework.Scraping.Middleware.Http
 			if (context.ScrapeJob is not HttpJob job || context.RequestHandeled)
 				return true;
 
-			if(_config.Filter != null && !_config.Filter(context))
+			if (_config.Filter != null && !_config.Filter(context))
 				return !_config.CancelMiddlewareOnFilterMismatch;
 
 			var client = context.ServiceProvider.GetRequiredService<HttpClient>();
@@ -50,9 +51,22 @@ namespace AwosFramework.Scraping.Middleware.Http
 			}
 			else
 			{
-				if(_config.WaitOnRateLimit && response.StatusCode == HttpStatusCode.TooManyRequests && response.Headers.TryGetValues("x-ratelimit-reset", out var timeouts) && int.TryParse(timeouts.First(), out var timeoutSeconds))
+				if (_config.WaitOnRateLimit && response.StatusCode == HttpStatusCode.TooManyRequests)
 				{
-					timeoutSeconds = Math.Min(timeoutSeconds, _config.MaxRateLimitWaitSeconds);
+					int timeoutSeconds;
+					if (response.Headers.TryGetValues("Retry-After", out var retryAfter) && int.TryParse(retryAfter.First(), out timeoutSeconds))
+					{
+						timeoutSeconds = Math.Min(timeoutSeconds, _config.MaxRateLimitWaitSeconds);
+					}
+					else if (response.Headers.TryGetValues("x-ratelimit-reset", out var timeouts) && int.TryParse(timeouts.First(), out timeoutSeconds))
+					{
+						timeoutSeconds = Math.Min(timeoutSeconds, _config.MaxRateLimitWaitSeconds);
+					}
+					else
+					{
+						timeoutSeconds = _config.DefaultRateLimitWaitSeconds;
+					}
+
 					_logger.LogError("Hit ratelimit, waiting for {Timeout}s", timeoutSeconds);
 					await Task.Delay(TimeSpan.FromSeconds(timeoutSeconds));
 				}

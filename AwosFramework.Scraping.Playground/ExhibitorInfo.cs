@@ -10,20 +10,29 @@ namespace AwosFramework.Scraping.Playground
 	public class ExhibitorInfo
 	{
 		[JsonPropertyName("id")]
-		public string? Id { get; init; }
+		public string? Id { get; set; }
 
 		[JsonPropertyName("type")]
-		public string? Type { get; init; }
-		public string? Name { get; init; }
-		public string? Email { get; init; }
-		public string? Website { get; init; }
-		public string? Description { get; init; }
-		public string? Country { get; init; }
-		public string[] CountryCoverage { get; init; }
-		public string[] Booths { get; init; }
-		public string[] MedicalEquipment { get; init; }
+		public string? Type { get; set; }
+
+		[JsonPropertyName("name")]
+		public string? Name { get; set; }
+
+		[JsonPropertyName("email")]
+		public string? Email { get; set; }
+
+		[JsonPropertyName("websiteUrl")]
+		public string? Website { get; set; }
+
+		[JsonPropertyName("description")]
+		public string? Description { get; set; }
+
+		public string? Country { get; set; }
+		public string[] CountryCoverage { get; set; }
+		public string[] Booths { get; set; }
+		public string[] MedicalEquipment { get; set; }
 		public string[] ConnectWith { get; set; }
 		public string[] NatureOfBusiness { get; set; }
-		public List<ExhibitionerMember> Members { get; set; }
+		public List<ExhibitorMember> Members { get; set; }
 	}
 }

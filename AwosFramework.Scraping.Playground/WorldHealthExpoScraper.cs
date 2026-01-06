@@ -35,16 +35,90 @@ namespace AwosFramework.Scraping.Playground
 		}
 
 		[HandlerName(EXHIBITIONER_DETAIL_HANDLER)]
-		public IScrapeJob HandleExhibitioner([FromBody]JsonDocument detailData)
+		public IScrapeResult HandleExhibitioner([FromBody] JsonDocument detailData)
 		{
-			var
+			var queryResponses = detailData.RootElement.EnumerateArray().ToArray();
+			var exhibitorElem = queryResponses[0].GetProperty("data").GetProperty("exhibitor");
+			var exhibitor = exhibitorElem.Deserialize<ExhibitorInfo>();
+			if (exhibitor == null)
+				return Fail("Failed to deserialize exhibitor info");
+
+			exhibitor.Country = GetNestedPropertyString(exhibitorElem, "address.country");
+			var eventElem = exhibitorElem.GetProperty("withEvent");
+			exhibitor.CountryCoverage = GetFieldValues("Country coverage", eventElem).ToArray();
+			exhibitor.MedicalEquipment = GetFieldValues("Medical Equipment", eventElem).ToArray();
+			exhibitor.ConnectWith = GetFieldValues("Interested to connect with", eventElem).ToArray();
+			exhibitor.NatureOfBusiness = GetFieldValues("Nature of Business", eventElem).ToArray();
+			exhibitor.Booths = eventElem.GetProperty("booths").EnumerateArray()
+				.Select(x => x.GetProperty("name").GetString())
+				.Where(x => string.IsNullOrEmpty(x) == false)
+				.ToArray();
+
+			var membersElem = queryResponses[1].GetProperty("data").GetProperty("members");
+			var members = membersElem.GetProperty("nodes").EnumerateArray()
+				.Select(x => x.Deserialize<ExhibitorMember>())
+				.Where(x => x != null)!
+				.ToList()!;
+
+			exhibitor.Members = members;
+			var pageInfoElem = membersElem.GetProperty("pageInfo");
+			if (pageInfoElem.GetProperty("hasNextPage").GetBoolean())
+			{
+				var endCursor = pageInfoElem.GetProperty("endCursor").GetString();
+				var job = HttpJob.Get(ApiHelper.GetExhibitorMembersRequest(exhibitor.Id, endCursor), 1, handlerName: EXHIBITIONER_MEMBER_LIST_HANDLER, data: exhibitor);
+				return Follow(job);
+			}
+			else
+			{
+				return Ok(exhibitor);
+			}
 		}
 
 		[HandlerName(EXHIBITIONER_MEMBER_LIST_HANDLER)]
-		public IScrapeJob HandleExhibitionerMembers([FromBody]JsonDocument members, [FromJob]ExhibitorInfo info)
+		public IScrapeResult HandleExhibitionerMembers([FromBody] JsonDocument members, [FromJob] ExhibitorInfo info)
 		{
-			
+			var membersElem = members.RootElement.GetProperty("data").GetProperty("members");
+			var newMembers = membersElem.GetProperty("nodes").EnumerateArray()
+				.Select(x => x.Deserialize<ExhibitorMember>())
+				.Where(x => x != null)!
+				.ToList()!;
+
+			info.Members.AddRange(newMembers);
+			var pageInfoElem = membersElem.GetProperty("pageInfo");
+			if (pageInfoElem.GetProperty("hasNextPage").GetBoolean())
+			{
+				var endCursor = pageInfoElem.GetProperty("endCursor").GetString();
+				var job = HttpJob.Get(ApiHelper.GetExhibitorMembersRequest(info.Id, endCursor), 1, handlerName: EXHIBITIONER_MEMBER_LIST_HANDLER, data: info);
+				return Follow(job);
+			}
+			else
+			{
+				return Ok(info);
+			}
 		}
+
+		private static IEnumerable<string> GetFieldValues(string fieldName, JsonElement eventElem)
+		{
+			var field = FindField(fieldName, eventElem).GetProperty("values");
+			if(field.ValueKind != JsonValueKind.Array)
+				return Array.Empty<string>();
+
+			return field.EnumerateArray()
+				.Select(x => x.GetProperty("text").GetString())
+				.Where(x => string.IsNullOrEmpty(x) == false)!;
+		}
+
+		private static string? GetFieldValue(string fieldName, JsonElement eventElem)
+		{
+			return FindField(fieldName, eventElem).GetProperty("value").GetString();
+		}
+
+		private static JsonElement FindField(string fieldName, JsonElement eventElem)
+		{
+			return eventElem.GetProperty("fields").EnumerateArray().FirstOrDefault(x => x.GetProperty("name").ValueEquals(fieldName));
+		}
+
+
 
 		[Route("https://connections.whxevents.com/widget/event/whx-dubai-2026/exhibitor/{exhibitorId}")]
 		public IScrapeResult HandleExhibitor(string exhibitorId, [FromCss("#__NEXT_DATA__", DeserializationType = DeserializationType.Json)] JsonDocument document)
