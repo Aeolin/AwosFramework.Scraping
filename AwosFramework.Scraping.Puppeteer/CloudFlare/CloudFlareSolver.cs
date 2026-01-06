@@ -53,7 +53,7 @@ namespace AwosFramework.Scraping.PuppeteerRequestor.CloudFlare
 				_launchOptions.ExecutablePath = browser.GetExecutablePath();
 				_logger?.LogInformation("Downloaded to {path}", _launchOptions.ExecutablePath);
 			}
-			_browser = await extra.LaunchAsync(_launchOptions, factory);
+			_browser = await extra.LaunchAsync(_launchOptions);
 		}
 
 		public async Task<CloudFlareClearance> SolveAsync(ICloudFlareChallenge challenge)

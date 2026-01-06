@@ -39,6 +39,7 @@ namespace AwosFramework.Scraping.Core
 
 		public IScrapeResult Ok(params object[] data) => new ScrapeResult(null, data);
 		public IScrapeResult Empty() => _emptyResult;
-		public IScrapeResult Fail(Exception exception) => new FailedResult(exception);
+		public IScrapeResult Fail(Exception exception, string errorMessage) => new FailedResult(exception, errorMessage);
+		public IScrapeResult Fail(string errorMessage) => new FailedResult(errorMessage);
 	}
 }
